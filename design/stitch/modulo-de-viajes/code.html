@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Viajes - Falex</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#041627",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#00497e",
+                        "surface-dim": "#d7dadc",
+                        "on-surface": "#181c1e",
+                        "tertiary-container": "#002b4e",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "outline": "#74777d",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#44474c",
+                        "surface-container": "#ebeef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7fafc",
+                        "on-secondary-fixed": "#111c2c",
+                        "inverse-on-surface": "#eef1f3",
+                        "secondary-container": "#d5e0f7",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d2e4ff",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7fafc",
+                        "background": "#f7fafc",
+                        "surface-container-high": "#e5e9eb",
+                        "surface-container-low": "#f1f4f6",
+                        "inverse-surface": "#2d3133",
+                        "secondary": "#545f72",
+                        "on-primary-container": "#8192a7",
+                        "primary-fixed-dim": "#b7c8de",
+                        "on-background": "#181c1e",
+                        "secondary-fixed-dim": "#bcc7dd",
+                        "on-primary-fixed": "#0b1d2d",
+                        "primary-container": "#1a2b3c",
+                        "on-tertiary-fixed": "#001d37",
+                        "tertiary-fixed-dim": "#9fcaff",
+                        "on-tertiary-container": "#4894e2",
+                        "tertiary": "#00162c",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#d8e3fa",
+                        "on-secondary-container": "#586377",
+                        "inverse-primary": "#b7c8de",
+                        "primary-fixed": "#d2e4fb",
+                        "surface-tint": "#4f6073",
+                        "outline-variant": "#c4c6cd",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-primary-fixed-variant": "#38485a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "0.5rem",
+                        "container-padding-mobile": "1rem",
+                        "stack-lg": "1.5rem",
+                        "unit": "4px",
+                        "gutter": "1.5rem",
+                        "container-padding-desktop": "2rem",
+                        "stack-md": "1rem",
+                        "stack-xs": "0.25rem"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-full flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full top-0 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-container-padding-mobile h-16 shrink-0 z-40 hidden md:flex">
+<div class="flex items-center gap-stack-md">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-headline-lg text-headline-lg font-bold text-primary">Falex</span>
+</div>
+<nav class="flex gap-stack-md items-center">
+<a class="text-on-surface-variant hover:bg-surface-container transition-colors duration-200 px-4 py-2 rounded-lg font-label-md text-label-md flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+                Finance
+            </a>
+<a class="text-primary font-bold hover:bg-surface-container transition-colors duration-200 px-4 py-2 rounded-lg font-label-md text-label-md flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="local_shipping" data-weight="fill">local_shipping</span>
+                Trips
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container transition-colors duration-200 px-4 py-2 rounded-lg font-label-md text-label-md flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="inventory_2">inventory_2</span>
+                Fleet
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container transition-colors duration-200 px-4 py-2 rounded-lg font-label-md text-label-md flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="badge">badge</span>
+                Workers
+            </a>
+</nav>
+<div class="flex items-center gap-stack-md">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-md text-label-md overflow-hidden ring-1 ring-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a logistics manager in a modern office environment. Bright, clear lighting. The person is wearing smart casual corporate attire. Corporate light mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAX3Z5pMyW4GTDFrQZnXKNf4pEha6pRYqoRnV-bFKOYGtmF4xOyAzV9B6FXPaKpobPvxE5xcncj8m6W6zc9blhkxybyvEKpXQA-CURfof99x_HDMqEnVRqmU5PxRbbhzPfkkcRKyWNdvVjXq1cwAKxHyIBlnWlxd7nzl5zEHMlXGdTCxnkwEYoC6FISKQrKZpIcnVy3oYaeGKDQyonul7kKJmVxUejsNjZvqtIKLfIX-iiIjiuj7zMV"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg pb-32 md:pb-stack-lg">
+<!-- Header & Filters Bento -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-stack-lg">
+<div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-sm">
+<h1 class="font-headline-md text-headline-md text-primary mb-1">Viajes Activos</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-stack-md">Gestión y monitoreo de flota en tiempo real.</p>
+<div class="flex gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        14 En Ruta
+                    </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                        2 Retrasados
+                    </span>
+</div>
+</div>
+<!-- Filters -->
+<div class="md:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-sm flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="tune">tune</span>
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Filtros Avanzados</h2>
+</div>
+<form class="grid grid-cols-1 sm:grid-cols-3 gap-stack-md">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="driver">Conductor</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="driver">
+<option value="">Todos los conductores</option>
+<option value="1">Carlos Ramírez</option>
+<option value="2">Ana Gómez</option>
+<option value="3">Luis Fernández</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="month">Mes</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="month">
+<option value="">Este mes</option>
+<option value="09">Septiembre</option>
+<option value="08">Agosto</option>
+<option value="07">Julio</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1" for="vehicle">Vehículo ID</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="vehicle" placeholder="Ej. FLX-001" type="text"/>
+</div>
+</form>
+</div>
+</div>
+<!-- Trips List -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<!-- Desktop Table View -->
+<div class="hidden md:block overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low">
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">ID VIAJE</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">RUTA</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">CONDUCTOR</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">VEHÍCULO</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold">ESTADO</th>
+<th class="p-stack-md font-label-md text-label-md text-on-surface-variant font-semibold text-right">ACCIONES</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-stack-md font-data-mono text-data-mono text-primary">TRP-8421</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<span class="font-medium">Madrid</span>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-medium">Barcelona</span>
+</div>
+</td>
+<td class="p-stack-md flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px]">CR</div>
+                                Carlos Ramírez
+                            </td>
+<td class="p-stack-md font-data-mono text-data-mono">FLX-042</td>
+<td class="p-stack-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container border border-secondary-container">
+                                    En Transito
+                                </span>
+</td>
+<td class="p-stack-md text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-stack-md font-data-mono text-data-mono text-primary">TRP-8420</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<span class="font-medium">Valencia</span>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-medium">Sevilla</span>
+</div>
+</td>
+<td class="p-stack-md flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px]">AG</div>
+                                Ana Gómez
+                            </td>
+<td class="p-stack-md font-data-mono text-data-mono">FLX-018</td>
+<td class="p-stack-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container-high text-on-surface border border-outline-variant">
+                                    Completado
+                                </span>
+</td>
+<td class="p-stack-md text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-stack-md font-data-mono text-data-mono text-primary">TRP-8419</td>
+<td class="p-stack-md">
+<div class="flex items-center gap-2">
+<span class="font-medium">Bilbao</span>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-medium">Zaragoza</span>
+</div>
+</td>
+<td class="p-stack-md flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px]">LF</div>
+                                Luis Fernández
+                            </td>
+<td class="p-stack-md font-data-mono text-data-mono">FLX-088</td>
+<td class="p-stack-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-error-container text-on-error-container border border-error-container">
+                                    Retrasado
+                                </span>
+</td>
+<td class="p-stack-md text-right">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Mobile Card View -->
+<div class="md:hidden flex flex-col">
+<!-- Card 1 -->
+<div class="p-stack-md border-b border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono text-data-mono text-primary">TRP-8421</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">En Transito</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm">Madrid</span>
+<span class="material-symbols-outlined text-outline" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-headline-sm text-headline-sm">Barcelona</span>
+</div>
+<div class="flex justify-between items-center text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px]">CR</div>
+<span>Carlos R.</span>
+</div>
+<span class="font-data-mono text-data-mono">FLX-042</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-stack-md border-b border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-mono text-data-mono text-primary">TRP-8420</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container-high text-on-surface">Completado</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="font-headline-sm text-headline-sm">Valencia</span>
+<span class="material-symbols-outlined text-outline" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-headline-sm text-headline-sm">Sevilla</span>
+</div>
+<div class="flex justify-between items-center text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px]">AG</div>
+<span>Ana G.</span>
+</div>
+<span class="font-data-mono text-data-mono">FLX-018</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 bg-surface-container-lowest border-t border-outline-variant px-2 md:hidden pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md text-[10px]">Finance</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="local_shipping" data-weight="fill">local_shipping</span>
+<span class="font-label-md text-label-md text-[10px]">Trips</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md text-[10px]">Fleet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="badge">badge</span>
+<span class="font-label-md text-label-md text-[10px]">Workers</span>
+</a>
+</nav>
+</body></html>
