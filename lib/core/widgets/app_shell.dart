@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+
+import '../../features/trabajadores/presentation/trabajadores_list_screen.dart';
+import '../../features/vehiculos/presentation/vehiculos_list_screen.dart';
+import 'coming_soon_tab.dart';
+
+/// Navegación principal — 4 pestañas, igual que el borrador de Stitch
+/// (Finance / Trips / Fleet / Workers). Finanzas y Viajes son
+/// placeholders hasta las Fases 3 y 6.
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  int _index = 3;
+
+  static const _tabs = [
+    ComingSoonTab(titulo: 'Finanzas', fase: 'Fase 6 (Dashboard, filtros y reportes)'),
+    ComingSoonTab(titulo: 'Viajes', fase: 'Fase 3 (Viajes)'),
+    VehiculosListScreen(),
+    TrabajadoresListScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(index: _index, children: _tabs),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.payments_outlined),
+            label: 'Finanzas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_shipping_outlined),
+            label: 'Viajes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.warehouse_outlined),
+            label: 'Flota',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.badge_outlined),
+            label: 'Trabajadores',
+          ),
+        ],
+      ),
+    );
+  }
+}

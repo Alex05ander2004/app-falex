@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 /// Choferes y personal de Falex. Nunca se borra físicamente — ver
 /// "Validaciones y manejo de errores" del plan — porque tiene historial
 /// de viajes ligado; se da de baja con [activo] = false.
+@DataClassName('Trabajador')
 class Trabajadores extends Table {
   IntColumn get id => integer().autoIncrement()();
 

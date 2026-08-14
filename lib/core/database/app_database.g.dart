@@ -4,7 +4,7 @@ part of 'app_database.dart';
 
 // ignore_for_file: type=lint
 class $TrabajadoresTable extends Trabajadores
-    with TableInfo<$TrabajadoresTable, Trabajadore> {
+    with TableInfo<$TrabajadoresTable, Trabajador> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -137,7 +137,7 @@ class $TrabajadoresTable extends Trabajadores
   static const String $name = 'trabajadores';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Trabajadore> instance, {
+    Insertable<Trabajador> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -206,9 +206,9 @@ class $TrabajadoresTable extends Trabajadores
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Trabajadore map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Trabajador map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Trabajadore(
+    return Trabajador(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -254,7 +254,7 @@ class $TrabajadoresTable extends Trabajadores
   }
 }
 
-class Trabajadore extends DataClass implements Insertable<Trabajadore> {
+class Trabajador extends DataClass implements Insertable<Trabajador> {
   final int id;
   final String nombre;
 
@@ -266,7 +266,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
   final bool activo;
   final DateTime createdAt;
   final DateTime updatedAt;
-  const Trabajadore({
+  const Trabajador({
     required this.id,
     required this.nombre,
     required this.dni,
@@ -314,12 +314,12 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
     );
   }
 
-  factory Trabajadore.fromJson(
+  factory Trabajador.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Trabajadore(
+    return Trabajador(
       id: serializer.fromJson<int>(json['id']),
       nombre: serializer.fromJson<String>(json['nombre']),
       dni: serializer.fromJson<String>(json['dni']),
@@ -347,7 +347,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
     };
   }
 
-  Trabajadore copyWith({
+  Trabajador copyWith({
     int? id,
     String? nombre,
     String? dni,
@@ -357,7 +357,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
     bool? activo,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) => Trabajadore(
+  }) => Trabajador(
     id: id ?? this.id,
     nombre: nombre ?? this.nombre,
     dni: dni ?? this.dni,
@@ -368,8 +368,8 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  Trabajadore copyWithCompanion(TrabajadoresCompanion data) {
-    return Trabajadore(
+  Trabajador copyWithCompanion(TrabajadoresCompanion data) {
+    return Trabajador(
       id: data.id.present ? data.id.value : this.id,
       nombre: data.nombre.present ? data.nombre.value : this.nombre,
       dni: data.dni.present ? data.dni.value : this.dni,
@@ -386,7 +386,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
 
   @override
   String toString() {
-    return (StringBuffer('Trabajadore(')
+    return (StringBuffer('Trabajador(')
           ..write('id: $id, ')
           ..write('nombre: $nombre, ')
           ..write('dni: $dni, ')
@@ -415,7 +415,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Trabajadore &&
+      (other is Trabajador &&
           other.id == this.id &&
           other.nombre == this.nombre &&
           other.dni == this.dni &&
@@ -427,7 +427,7 @@ class Trabajadore extends DataClass implements Insertable<Trabajadore> {
           other.updatedAt == this.updatedAt);
 }
 
-class TrabajadoresCompanion extends UpdateCompanion<Trabajadore> {
+class TrabajadoresCompanion extends UpdateCompanion<Trabajador> {
   final Value<int> id;
   final Value<String> nombre;
   final Value<String> dni;
@@ -460,7 +460,7 @@ class TrabajadoresCompanion extends UpdateCompanion<Trabajadore> {
     this.updatedAt = const Value.absent(),
   }) : nombre = Value(nombre),
        dni = Value(dni);
-  static Insertable<Trabajadore> custom({
+  static Insertable<Trabajador> custom({
     Expression<int>? id,
     Expression<String>? nombre,
     Expression<String>? dni,
@@ -3784,7 +3784,7 @@ typedef $$TrabajadoresTableUpdateCompanionBuilder =
     });
 
 final class $$TrabajadoresTableReferences
-    extends BaseReferences<_$AppDatabase, $TrabajadoresTable, Trabajadore> {
+    extends BaseReferences<_$AppDatabase, $TrabajadoresTable, Trabajador> {
   $$TrabajadoresTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$ViajesTable, List<Viaje>> _viajesRefsTable(
@@ -4011,14 +4011,14 @@ class $$TrabajadoresTableTableManager
         RootTableManager<
           _$AppDatabase,
           $TrabajadoresTable,
-          Trabajadore,
+          Trabajador,
           $$TrabajadoresTableFilterComposer,
           $$TrabajadoresTableOrderingComposer,
           $$TrabajadoresTableAnnotationComposer,
           $$TrabajadoresTableCreateCompanionBuilder,
           $$TrabajadoresTableUpdateCompanionBuilder,
-          (Trabajadore, $$TrabajadoresTableReferences),
-          Trabajadore,
+          (Trabajador, $$TrabajadoresTableReferences),
+          Trabajador,
           PrefetchHooks Function({bool viajesRefs})
         > {
   $$TrabajadoresTableTableManager(_$AppDatabase db, $TrabajadoresTable table)
@@ -4093,7 +4093,7 @@ class $$TrabajadoresTableTableManager
                 return [
                   if (viajesRefs)
                     await $_getPrefetchedData<
-                      Trabajadore,
+                      Trabajador,
                       $TrabajadoresTable,
                       Viaje
                     >(
@@ -4124,14 +4124,14 @@ typedef $$TrabajadoresTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $TrabajadoresTable,
-      Trabajadore,
+      Trabajador,
       $$TrabajadoresTableFilterComposer,
       $$TrabajadoresTableOrderingComposer,
       $$TrabajadoresTableAnnotationComposer,
       $$TrabajadoresTableCreateCompanionBuilder,
       $$TrabajadoresTableUpdateCompanionBuilder,
-      (Trabajadore, $$TrabajadoresTableReferences),
-      Trabajadore,
+      (Trabajador, $$TrabajadoresTableReferences),
+      Trabajador,
       PrefetchHooks Function({bool viajesRefs})
     >;
 typedef $$VehiculosTableCreateCompanionBuilder = VehiculosCompanion Function({
