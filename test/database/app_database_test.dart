@@ -23,7 +23,7 @@ void main() {
         );
 
     final vehiculoId = await db.into(db.vehiculos).insert(
-          VehiculosCompanion.insert(placa: 'FLX-001', tipo: 'Tractocamión'),
+          VehiculosCompanion.insert(placa: 'FLX001', tipo: VehiculoTipo.trailer),
         );
 
     final viajeId = await db.into(db.viajes).insert(
@@ -49,7 +49,7 @@ void main() {
           TrabajadoresCompanion.insert(nombre: 'Ana Silva', dni: '87654321'),
         );
     final vehiculoId = await db.into(db.vehiculos).insert(
-          VehiculosCompanion.insert(placa: 'FLX-002', tipo: 'Remolque'),
+          VehiculosCompanion.insert(placa: 'FLX002', tipo: VehiculoTipo.semitrailer),
         );
 
     expect(

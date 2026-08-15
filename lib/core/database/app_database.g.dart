@@ -584,22 +584,22 @@ class $VehiculosTable extends Vehiculos
     aliasedName,
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 5,
-      maxTextLength: 10,
+      minTextLength: 6,
+      maxTextLength: 6,
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
-  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
   @override
-  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
-    'tipo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<VehiculoTipo, int> tipo =
+      GeneratedColumn<int>(
+        'tipo',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<VehiculoTipo>($VehiculosTable.$convertertipo);
   static const VerificationMeta _marcaMeta = const VerificationMeta('marca');
   @override
   late final GeneratedColumn<String> marca = GeneratedColumn<String>(
@@ -627,6 +627,15 @@ class $VehiculosTable extends Vehiculos
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<VehiculoColor?, int> color =
+      GeneratedColumn<int>(
+        'color',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      ).withConverter<VehiculoColor?>($VehiculosTable.$convertercolorn);
   static const VerificationMeta _soatVencimientoMeta = const VerificationMeta(
     'soatVencimiento',
   );
@@ -692,6 +701,7 @@ class $VehiculosTable extends Vehiculos
     marca,
     modelo,
     anio,
+    color,
     soatVencimiento,
     revisionTecnicaVencimiento,
     estado,
@@ -720,14 +730,6 @@ class $VehiculosTable extends Vehiculos
       );
     } else if (isInserting) {
       context.missing(_placaMeta);
-    }
-    if (data.containsKey('tipo')) {
-      context.handle(
-        _tipoMeta,
-        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_tipoMeta);
     }
     if (data.containsKey('marca')) {
       context.handle(
@@ -794,10 +796,12 @@ class $VehiculosTable extends Vehiculos
         DriftSqlType.string,
         data['${effectivePrefix}placa'],
       )!,
-      tipo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}tipo'],
-      )!,
+      tipo: $VehiculosTable.$convertertipo.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}tipo'],
+        )!,
+      ),
       marca: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}marca'],
@@ -809,6 +813,12 @@ class $VehiculosTable extends Vehiculos
       anio: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}anio'],
+      ),
+      color: $VehiculosTable.$convertercolorn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}color'],
+        ),
       ),
       soatVencimiento: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -840,6 +850,12 @@ class $VehiculosTable extends Vehiculos
     return $VehiculosTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<VehiculoTipo, int, int> $convertertipo =
+      const EnumIndexConverter<VehiculoTipo>(VehiculoTipo.values);
+  static JsonTypeConverter2<VehiculoColor, int, int> $convertercolor =
+      const EnumIndexConverter<VehiculoColor>(VehiculoColor.values);
+  static JsonTypeConverter2<VehiculoColor?, int?, int?> $convertercolorn =
+      JsonTypeConverter2.asNullable($convertercolor);
   static JsonTypeConverter2<VehiculoEstado, int, int> $converterestado =
       const EnumIndexConverter<VehiculoEstado>(VehiculoEstado.values);
 }
@@ -847,12 +863,17 @@ class $VehiculosTable extends Vehiculos
 class Vehiculo extends DataClass implements Insertable<Vehiculo> {
   final int id;
 
-  /// Placa única — evita confundir dos unidades en un reporte.
+  /// Placa única, de 6 caracteres (formato peruano) — evita confundir
+  /// dos unidades en un reporte.
   final String placa;
-  final String tipo;
+  final VehiculoTipo tipo;
   final String? marca;
   final String? modelo;
   final int? anio;
+
+  /// Ayuda a identificar la unidad de un vistazo — opcional porque no
+  /// siempre se conoce al registrarla.
+  final VehiculoColor? color;
   final DateTime? soatVencimiento;
   final DateTime? revisionTecnicaVencimiento;
   final VehiculoEstado estado;
@@ -865,6 +886,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     this.marca,
     this.modelo,
     this.anio,
+    this.color,
     this.soatVencimiento,
     this.revisionTecnicaVencimiento,
     required this.estado,
@@ -876,7 +898,9 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['placa'] = Variable<String>(placa);
-    map['tipo'] = Variable<String>(tipo);
+    {
+      map['tipo'] = Variable<int>($VehiculosTable.$convertertipo.toSql(tipo));
+    }
     if (!nullToAbsent || marca != null) {
       map['marca'] = Variable<String>(marca);
     }
@@ -885,6 +909,11 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     }
     if (!nullToAbsent || anio != null) {
       map['anio'] = Variable<int>(anio);
+    }
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<int>(
+        $VehiculosTable.$convertercolorn.toSql(color),
+      );
     }
     if (!nullToAbsent || soatVencimiento != null) {
       map['soat_vencimiento'] = Variable<DateTime>(soatVencimiento);
@@ -916,6 +945,9 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           ? const Value.absent()
           : Value(modelo),
       anio: anio == null && nullToAbsent ? const Value.absent() : Value(anio),
+      color: color == null && nullToAbsent
+          ? const Value.absent()
+          : Value(color),
       soatVencimiento: soatVencimiento == null && nullToAbsent
           ? const Value.absent()
           : Value(soatVencimiento),
@@ -937,10 +969,15 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     return Vehiculo(
       id: serializer.fromJson<int>(json['id']),
       placa: serializer.fromJson<String>(json['placa']),
-      tipo: serializer.fromJson<String>(json['tipo']),
+      tipo: $VehiculosTable.$convertertipo.fromJson(
+        serializer.fromJson<int>(json['tipo']),
+      ),
       marca: serializer.fromJson<String?>(json['marca']),
       modelo: serializer.fromJson<String?>(json['modelo']),
       anio: serializer.fromJson<int?>(json['anio']),
+      color: $VehiculosTable.$convertercolorn.fromJson(
+        serializer.fromJson<int?>(json['color']),
+      ),
       soatVencimiento: serializer.fromJson<DateTime?>(json['soatVencimiento']),
       revisionTecnicaVencimiento: serializer.fromJson<DateTime?>(
         json['revisionTecnicaVencimiento'],
@@ -958,10 +995,15 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'placa': serializer.toJson<String>(placa),
-      'tipo': serializer.toJson<String>(tipo),
+      'tipo': serializer.toJson<int>(
+        $VehiculosTable.$convertertipo.toJson(tipo),
+      ),
       'marca': serializer.toJson<String?>(marca),
       'modelo': serializer.toJson<String?>(modelo),
       'anio': serializer.toJson<int?>(anio),
+      'color': serializer.toJson<int?>(
+        $VehiculosTable.$convertercolorn.toJson(color),
+      ),
       'soatVencimiento': serializer.toJson<DateTime?>(soatVencimiento),
       'revisionTecnicaVencimiento': serializer.toJson<DateTime?>(
         revisionTecnicaVencimiento,
@@ -977,10 +1019,11 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
   Vehiculo copyWith({
     int? id,
     String? placa,
-    String? tipo,
+    VehiculoTipo? tipo,
     Value<String?> marca = const Value.absent(),
     Value<String?> modelo = const Value.absent(),
     Value<int?> anio = const Value.absent(),
+    Value<VehiculoColor?> color = const Value.absent(),
     Value<DateTime?> soatVencimiento = const Value.absent(),
     Value<DateTime?> revisionTecnicaVencimiento = const Value.absent(),
     VehiculoEstado? estado,
@@ -993,6 +1036,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     marca: marca.present ? marca.value : this.marca,
     modelo: modelo.present ? modelo.value : this.modelo,
     anio: anio.present ? anio.value : this.anio,
+    color: color.present ? color.value : this.color,
     soatVencimiento: soatVencimiento.present
         ? soatVencimiento.value
         : this.soatVencimiento,
@@ -1011,6 +1055,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
       marca: data.marca.present ? data.marca.value : this.marca,
       modelo: data.modelo.present ? data.modelo.value : this.modelo,
       anio: data.anio.present ? data.anio.value : this.anio,
+      color: data.color.present ? data.color.value : this.color,
       soatVencimiento: data.soatVencimiento.present
           ? data.soatVencimiento.value
           : this.soatVencimiento,
@@ -1032,6 +1077,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           ..write('marca: $marca, ')
           ..write('modelo: $modelo, ')
           ..write('anio: $anio, ')
+          ..write('color: $color, ')
           ..write('soatVencimiento: $soatVencimiento, ')
           ..write('revisionTecnicaVencimiento: $revisionTecnicaVencimiento, ')
           ..write('estado: $estado, ')
@@ -1049,6 +1095,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     marca,
     modelo,
     anio,
+    color,
     soatVencimiento,
     revisionTecnicaVencimiento,
     estado,
@@ -1065,6 +1112,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           other.marca == this.marca &&
           other.modelo == this.modelo &&
           other.anio == this.anio &&
+          other.color == this.color &&
           other.soatVencimiento == this.soatVencimiento &&
           other.revisionTecnicaVencimiento == this.revisionTecnicaVencimiento &&
           other.estado == this.estado &&
@@ -1075,10 +1123,11 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
 class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
   final Value<int> id;
   final Value<String> placa;
-  final Value<String> tipo;
+  final Value<VehiculoTipo> tipo;
   final Value<String?> marca;
   final Value<String?> modelo;
   final Value<int?> anio;
+  final Value<VehiculoColor?> color;
   final Value<DateTime?> soatVencimiento;
   final Value<DateTime?> revisionTecnicaVencimiento;
   final Value<VehiculoEstado> estado;
@@ -1091,6 +1140,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     this.marca = const Value.absent(),
     this.modelo = const Value.absent(),
     this.anio = const Value.absent(),
+    this.color = const Value.absent(),
     this.soatVencimiento = const Value.absent(),
     this.revisionTecnicaVencimiento = const Value.absent(),
     this.estado = const Value.absent(),
@@ -1100,10 +1150,11 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
   VehiculosCompanion.insert({
     this.id = const Value.absent(),
     required String placa,
-    required String tipo,
+    required VehiculoTipo tipo,
     this.marca = const Value.absent(),
     this.modelo = const Value.absent(),
     this.anio = const Value.absent(),
+    this.color = const Value.absent(),
     this.soatVencimiento = const Value.absent(),
     this.revisionTecnicaVencimiento = const Value.absent(),
     this.estado = const Value.absent(),
@@ -1114,10 +1165,11 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
   static Insertable<Vehiculo> custom({
     Expression<int>? id,
     Expression<String>? placa,
-    Expression<String>? tipo,
+    Expression<int>? tipo,
     Expression<String>? marca,
     Expression<String>? modelo,
     Expression<int>? anio,
+    Expression<int>? color,
     Expression<DateTime>? soatVencimiento,
     Expression<DateTime>? revisionTecnicaVencimiento,
     Expression<int>? estado,
@@ -1131,6 +1183,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
       if (marca != null) 'marca': marca,
       if (modelo != null) 'modelo': modelo,
       if (anio != null) 'anio': anio,
+      if (color != null) 'color': color,
       if (soatVencimiento != null) 'soat_vencimiento': soatVencimiento,
       if (revisionTecnicaVencimiento != null)
         'revision_tecnica_vencimiento': revisionTecnicaVencimiento,
@@ -1143,10 +1196,11 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
   VehiculosCompanion copyWith({
     Value<int>? id,
     Value<String>? placa,
-    Value<String>? tipo,
+    Value<VehiculoTipo>? tipo,
     Value<String?>? marca,
     Value<String?>? modelo,
     Value<int?>? anio,
+    Value<VehiculoColor?>? color,
     Value<DateTime?>? soatVencimiento,
     Value<DateTime?>? revisionTecnicaVencimiento,
     Value<VehiculoEstado>? estado,
@@ -1160,6 +1214,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
       marca: marca ?? this.marca,
       modelo: modelo ?? this.modelo,
       anio: anio ?? this.anio,
+      color: color ?? this.color,
       soatVencimiento: soatVencimiento ?? this.soatVencimiento,
       revisionTecnicaVencimiento:
           revisionTecnicaVencimiento ?? this.revisionTecnicaVencimiento,
@@ -1179,7 +1234,9 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
       map['placa'] = Variable<String>(placa.value);
     }
     if (tipo.present) {
-      map['tipo'] = Variable<String>(tipo.value);
+      map['tipo'] = Variable<int>(
+        $VehiculosTable.$convertertipo.toSql(tipo.value),
+      );
     }
     if (marca.present) {
       map['marca'] = Variable<String>(marca.value);
@@ -1189,6 +1246,11 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     }
     if (anio.present) {
       map['anio'] = Variable<int>(anio.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(
+        $VehiculosTable.$convertercolorn.toSql(color.value),
+      );
     }
     if (soatVencimiento.present) {
       map['soat_vencimiento'] = Variable<DateTime>(soatVencimiento.value);
@@ -1221,6 +1283,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
           ..write('marca: $marca, ')
           ..write('modelo: $modelo, ')
           ..write('anio: $anio, ')
+          ..write('color: $color, ')
           ..write('soatVencimiento: $soatVencimiento, ')
           ..write('revisionTecnicaVencimiento: $revisionTecnicaVencimiento, ')
           ..write('estado: $estado, ')
@@ -1333,9 +1396,6 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES trabajadores (id)',
-    ),
   );
   static const VerificationMeta _vehiculoIdMeta = const VerificationMeta(
     'vehiculoId',
@@ -1347,9 +1407,6 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vehiculos (id)',
-    ),
   );
   @override
   late final GeneratedColumnWithTypeConverter<ViajeEstado, int> estado =
@@ -2057,9 +2114,6 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES viajes (id)',
-    ),
   );
   static const VerificationMeta _comprobantePathMeta = const VerificationMeta(
     'comprobantePath',
@@ -2573,9 +2627,6 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES viajes (id)',
-    ),
   );
   static const VerificationMeta _vehiculoIdMeta = const VerificationMeta(
     'vehiculoId',
@@ -2587,9 +2638,6 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vehiculos (id)',
-    ),
   );
   static const VerificationMeta _comprobantePathMeta = const VerificationMeta(
     'comprobantePath',
@@ -3783,30 +3831,6 @@ typedef $$TrabajadoresTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
     });
 
-final class $$TrabajadoresTableReferences
-    extends BaseReferences<_$AppDatabase, $TrabajadoresTable, Trabajador> {
-  $$TrabajadoresTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$ViajesTable, List<Viaje>> _viajesRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.viajes,
-    aliasName: 'trabajadores__id__viajes__trabajador_id',
-  );
-
-  $$ViajesTableProcessedTableManager get viajesRefs {
-    final manager = $$ViajesTableTableManager(
-      $_db,
-      $_db.viajes,
-    ).filter((f) => f.trabajadorId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_viajesRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
 class $$TrabajadoresTableFilterComposer
     extends Composer<_$AppDatabase, $TrabajadoresTable> {
   $$TrabajadoresTableFilterComposer({
@@ -3860,31 +3884,6 @@ class $$TrabajadoresTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> viajesRefs(
-    Expression<bool> Function($$ViajesTableFilterComposer f) f,
-  ) {
-    final $$ViajesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.trabajadorId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableFilterComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$TrabajadoresTableOrderingComposer
@@ -3979,31 +3978,6 @@ class $$TrabajadoresTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  Expression<T> viajesRefs<T extends Object>(
-    Expression<T> Function($$ViajesTableAnnotationComposer a) f,
-  ) {
-    final $$ViajesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.trabajadorId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$TrabajadoresTableTableManager
@@ -4017,9 +3991,12 @@ class $$TrabajadoresTableTableManager
           $$TrabajadoresTableAnnotationComposer,
           $$TrabajadoresTableCreateCompanionBuilder,
           $$TrabajadoresTableUpdateCompanionBuilder,
-          (Trabajador, $$TrabajadoresTableReferences),
+          (
+            Trabajador,
+            BaseReferences<_$AppDatabase, $TrabajadoresTable, Trabajador>,
+          ),
           Trabajador,
-          PrefetchHooks Function({bool viajesRefs})
+          PrefetchHooks Function()
         > {
   $$TrabajadoresTableTableManager(_$AppDatabase db, $TrabajadoresTable table)
     : super(
@@ -4077,45 +4054,9 @@ class $$TrabajadoresTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$TrabajadoresTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({viajesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (viajesRefs) db.viajes],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (viajesRefs)
-                    await $_getPrefetchedData<
-                      Trabajador,
-                      $TrabajadoresTable,
-                      Viaje
-                    >(
-                      currentTable: table,
-                      referencedTable: $$TrabajadoresTableReferences
-                          ._viajesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$TrabajadoresTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).viajesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.trabajadorId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -4130,79 +4071,43 @@ typedef $$TrabajadoresTableProcessedTableManager =
       $$TrabajadoresTableAnnotationComposer,
       $$TrabajadoresTableCreateCompanionBuilder,
       $$TrabajadoresTableUpdateCompanionBuilder,
-      (Trabajador, $$TrabajadoresTableReferences),
+      (
+        Trabajador,
+        BaseReferences<_$AppDatabase, $TrabajadoresTable, Trabajador>,
+      ),
       Trabajador,
-      PrefetchHooks Function({bool viajesRefs})
+      PrefetchHooks Function()
     >;
-typedef $$VehiculosTableCreateCompanionBuilder = VehiculosCompanion Function({
-  Value<int> id,
-  required String placa,
-  required String tipo,
-  Value<String?> marca,
-  Value<String?> modelo,
-  Value<int?> anio,
-  Value<DateTime?> soatVencimiento,
-  Value<DateTime?> revisionTecnicaVencimiento,
-  Value<VehiculoEstado> estado,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-typedef $$VehiculosTableUpdateCompanionBuilder = VehiculosCompanion Function({
-  Value<int> id,
-  Value<String> placa,
-  Value<String> tipo,
-  Value<String?> marca,
-  Value<String?> modelo,
-  Value<int?> anio,
-  Value<DateTime?> soatVencimiento,
-  Value<DateTime?> revisionTecnicaVencimiento,
-  Value<VehiculoEstado> estado,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-
-final class $$VehiculosTableReferences
-    extends BaseReferences<_$AppDatabase, $VehiculosTable, Vehiculo> {
-  $$VehiculosTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$ViajesTable, List<Viaje>> _viajesRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.viajes,
-    aliasName: 'vehiculos__id__viajes__vehiculo_id',
-  );
-
-  $$ViajesTableProcessedTableManager get viajesRefs {
-    final manager = $$ViajesTableTableManager(
-      $_db,
-      $_db.viajes,
-    ).filter((f) => f.vehiculoId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_viajesRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$EgresosTable, List<Egreso>> _egresosRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.egresos,
-    aliasName: 'vehiculos__id__egresos__vehiculo_id',
-  );
-
-  $$EgresosTableProcessedTableManager get egresosRefs {
-    final manager = $$EgresosTableTableManager(
-      $_db,
-      $_db.egresos,
-    ).filter((f) => f.vehiculoId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_egresosRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
+typedef $$VehiculosTableCreateCompanionBuilder =
+    VehiculosCompanion Function({
+      Value<int> id,
+      required String placa,
+      required VehiculoTipo tipo,
+      Value<String?> marca,
+      Value<String?> modelo,
+      Value<int?> anio,
+      Value<VehiculoColor?> color,
+      Value<DateTime?> soatVencimiento,
+      Value<DateTime?> revisionTecnicaVencimiento,
+      Value<VehiculoEstado> estado,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$VehiculosTableUpdateCompanionBuilder =
+    VehiculosCompanion Function({
+      Value<int> id,
+      Value<String> placa,
+      Value<VehiculoTipo> tipo,
+      Value<String?> marca,
+      Value<String?> modelo,
+      Value<int?> anio,
+      Value<VehiculoColor?> color,
+      Value<DateTime?> soatVencimiento,
+      Value<DateTime?> revisionTecnicaVencimiento,
+      Value<VehiculoEstado> estado,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
 
 class $$VehiculosTableFilterComposer
     extends Composer<_$AppDatabase, $VehiculosTable> {
@@ -4223,10 +4128,11 @@ class $$VehiculosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get tipo => $composableBuilder(
-    column: $table.tipo,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<VehiculoTipo, VehiculoTipo, int> get tipo =>
+      $composableBuilder(
+        column: $table.tipo,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<String> get marca => $composableBuilder(
     column: $table.marca,
@@ -4241,6 +4147,12 @@ class $$VehiculosTableFilterComposer
   ColumnFilters<int> get anio => $composableBuilder(
     column: $table.anio,
     builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<VehiculoColor?, VehiculoColor, int>
+  get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<DateTime> get soatVencimiento => $composableBuilder(
@@ -4268,56 +4180,6 @@ class $$VehiculosTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> viajesRefs(
-    Expression<bool> Function($$ViajesTableFilterComposer f) f,
-  ) {
-    final $$ViajesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.vehiculoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableFilterComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> egresosRefs(
-    Expression<bool> Function($$EgresosTableFilterComposer f) f,
-  ) {
-    final $$EgresosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.egresos,
-      getReferencedColumn: (t) => t.vehiculoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EgresosTableFilterComposer(
-            $db: $db,
-            $table: $db.egresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$VehiculosTableOrderingComposer
@@ -4339,7 +4201,7 @@ class $$VehiculosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get tipo => $composableBuilder(
+  ColumnOrderings<int> get tipo => $composableBuilder(
     column: $table.tipo,
     builder: (column) => ColumnOrderings(column),
   );
@@ -4356,6 +4218,11 @@ class $$VehiculosTableOrderingComposer
 
   ColumnOrderings<int> get anio => $composableBuilder(
     column: $table.anio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4401,7 +4268,7 @@ class $$VehiculosTableAnnotationComposer
   GeneratedColumn<String> get placa =>
       $composableBuilder(column: $table.placa, builder: (column) => column);
 
-  GeneratedColumn<String> get tipo =>
+  GeneratedColumnWithTypeConverter<VehiculoTipo, int> get tipo =>
       $composableBuilder(column: $table.tipo, builder: (column) => column);
 
   GeneratedColumn<String> get marca =>
@@ -4412,6 +4279,9 @@ class $$VehiculosTableAnnotationComposer
 
   GeneratedColumn<int> get anio =>
       $composableBuilder(column: $table.anio, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<VehiculoColor?, int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
 
   GeneratedColumn<DateTime> get soatVencimiento => $composableBuilder(
     column: $table.soatVencimiento,
@@ -4432,56 +4302,6 @@ class $$VehiculosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  Expression<T> viajesRefs<T extends Object>(
-    Expression<T> Function($$ViajesTableAnnotationComposer a) f,
-  ) {
-    final $$ViajesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.vehiculoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> egresosRefs<T extends Object>(
-    Expression<T> Function($$EgresosTableAnnotationComposer a) f,
-  ) {
-    final $$EgresosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.egresos,
-      getReferencedColumn: (t) => t.vehiculoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EgresosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.egresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$VehiculosTableTableManager
@@ -4495,9 +4315,9 @@ class $$VehiculosTableTableManager
           $$VehiculosTableAnnotationComposer,
           $$VehiculosTableCreateCompanionBuilder,
           $$VehiculosTableUpdateCompanionBuilder,
-          (Vehiculo, $$VehiculosTableReferences),
+          (Vehiculo, BaseReferences<_$AppDatabase, $VehiculosTable, Vehiculo>),
           Vehiculo,
-          PrefetchHooks Function({bool viajesRefs, bool egresosRefs})
+          PrefetchHooks Function()
         > {
   $$VehiculosTableTableManager(_$AppDatabase db, $VehiculosTable table)
     : super(
@@ -4514,10 +4334,11 @@ class $$VehiculosTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> placa = const Value.absent(),
-                Value<String> tipo = const Value.absent(),
+                Value<VehiculoTipo> tipo = const Value.absent(),
                 Value<String?> marca = const Value.absent(),
                 Value<String?> modelo = const Value.absent(),
                 Value<int?> anio = const Value.absent(),
+                Value<VehiculoColor?> color = const Value.absent(),
                 Value<DateTime?> soatVencimiento = const Value.absent(),
                 Value<DateTime?> revisionTecnicaVencimiento =
                     const Value.absent(),
@@ -4531,6 +4352,7 @@ class $$VehiculosTableTableManager
                 marca: marca,
                 modelo: modelo,
                 anio: anio,
+                color: color,
                 soatVencimiento: soatVencimiento,
                 revisionTecnicaVencimiento: revisionTecnicaVencimiento,
                 estado: estado,
@@ -4541,10 +4363,11 @@ class $$VehiculosTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String placa,
-                required String tipo,
+                required VehiculoTipo tipo,
                 Value<String?> marca = const Value.absent(),
                 Value<String?> modelo = const Value.absent(),
                 Value<int?> anio = const Value.absent(),
+                Value<VehiculoColor?> color = const Value.absent(),
                 Value<DateTime?> soatVencimiento = const Value.absent(),
                 Value<DateTime?> revisionTecnicaVencimiento =
                     const Value.absent(),
@@ -4558,6 +4381,7 @@ class $$VehiculosTableTableManager
                 marca: marca,
                 modelo: modelo,
                 anio: anio,
+                color: color,
                 soatVencimiento: soatVencimiento,
                 revisionTecnicaVencimiento: revisionTecnicaVencimiento,
                 estado: estado,
@@ -4565,53 +4389,9 @@ class $$VehiculosTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$VehiculosTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({viajesRefs = false, egresosRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (viajesRefs) db.viajes,
-                if (egresosRefs) db.egresos,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (viajesRefs)
-                    await $_getPrefetchedData<Vehiculo, $VehiculosTable, Viaje>(
-                      currentTable: table,
-                      referencedTable: $$VehiculosTableReferences
-                          ._viajesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$VehiculosTableReferences(db, table, p0).viajesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.vehiculoId == item.id),
-                      typedResults: items,
-                    ),
-                  if (egresosRefs)
-                    await $_getPrefetchedData<
-                      Vehiculo,
-                      $VehiculosTable,
-                      Egreso
-                    >(
-                      currentTable: table,
-                      referencedTable: $$VehiculosTableReferences
-                          ._egresosRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$VehiculosTableReferences(db, table, p0).egresosRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.vehiculoId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -4626,117 +4406,42 @@ typedef $$VehiculosTableProcessedTableManager =
       $$VehiculosTableAnnotationComposer,
       $$VehiculosTableCreateCompanionBuilder,
       $$VehiculosTableUpdateCompanionBuilder,
-      (Vehiculo, $$VehiculosTableReferences),
+      (Vehiculo, BaseReferences<_$AppDatabase, $VehiculosTable, Vehiculo>),
       Vehiculo,
-      PrefetchHooks Function({bool viajesRefs, bool egresosRefs})
+      PrefetchHooks Function()
     >;
-typedef $$ViajesTableCreateCompanionBuilder = ViajesCompanion Function({
-  Value<int> id,
-  required DateTime fechaSalida,
-  Value<DateTime?> fechaLlegada,
-  required String origen,
-  required String destino,
-  Value<String> cliente,
-  Value<String?> carga,
-  Value<double?> kilometraje,
-  required int trabajadorId,
-  required int vehiculoId,
-  Value<ViajeEstado> estado,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-typedef $$ViajesTableUpdateCompanionBuilder = ViajesCompanion Function({
-  Value<int> id,
-  Value<DateTime> fechaSalida,
-  Value<DateTime?> fechaLlegada,
-  Value<String> origen,
-  Value<String> destino,
-  Value<String> cliente,
-  Value<String?> carga,
-  Value<double?> kilometraje,
-  Value<int> trabajadorId,
-  Value<int> vehiculoId,
-  Value<ViajeEstado> estado,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-
-final class $$ViajesTableReferences
-    extends BaseReferences<_$AppDatabase, $ViajesTable, Viaje> {
-  $$ViajesTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $TrabajadoresTable _trabajadorIdTable(_$AppDatabase db) =>
-      db.trabajadores.createAlias('viajes__trabajador_id__trabajadores__id');
-
-  $$TrabajadoresTableProcessedTableManager get trabajadorId {
-    final $_column = $_itemColumn<int>('trabajador_id')!;
-
-    final manager = $$TrabajadoresTableTableManager(
-      $_db,
-      $_db.trabajadores,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_trabajadorIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static $VehiculosTable _vehiculoIdTable(_$AppDatabase db) =>
-      db.vehiculos.createAlias('viajes__vehiculo_id__vehiculos__id');
-
-  $$VehiculosTableProcessedTableManager get vehiculoId {
-    final $_column = $_itemColumn<int>('vehiculo_id')!;
-
-    final manager = $$VehiculosTableTableManager(
-      $_db,
-      $_db.vehiculos,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_vehiculoIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$IngresosTable, List<Ingreso>> _ingresosRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.ingresos,
-    aliasName: 'viajes__id__ingresos__viaje_id',
-  );
-
-  $$IngresosTableProcessedTableManager get ingresosRefs {
-    final manager = $$IngresosTableTableManager(
-      $_db,
-      $_db.ingresos,
-    ).filter((f) => f.viajeId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_ingresosRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$EgresosTable, List<Egreso>> _egresosRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.egresos,
-    aliasName: 'viajes__id__egresos__viaje_id',
-  );
-
-  $$EgresosTableProcessedTableManager get egresosRefs {
-    final manager = $$EgresosTableTableManager(
-      $_db,
-      $_db.egresos,
-    ).filter((f) => f.viajeId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_egresosRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
+typedef $$ViajesTableCreateCompanionBuilder =
+    ViajesCompanion Function({
+      Value<int> id,
+      required DateTime fechaSalida,
+      Value<DateTime?> fechaLlegada,
+      required String origen,
+      required String destino,
+      Value<String> cliente,
+      Value<String?> carga,
+      Value<double?> kilometraje,
+      required int trabajadorId,
+      required int vehiculoId,
+      Value<ViajeEstado> estado,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$ViajesTableUpdateCompanionBuilder =
+    ViajesCompanion Function({
+      Value<int> id,
+      Value<DateTime> fechaSalida,
+      Value<DateTime?> fechaLlegada,
+      Value<String> origen,
+      Value<String> destino,
+      Value<String> cliente,
+      Value<String?> carga,
+      Value<double?> kilometraje,
+      Value<int> trabajadorId,
+      Value<int> vehiculoId,
+      Value<ViajeEstado> estado,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
 
 class $$ViajesTableFilterComposer
     extends Composer<_$AppDatabase, $ViajesTable> {
@@ -4787,6 +4492,16 @@ class $$ViajesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get trabajadorId => $composableBuilder(
+    column: $table.trabajadorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnWithTypeConverterFilters<ViajeEstado, ViajeEstado, int> get estado =>
       $composableBuilder(
         column: $table.estado,
@@ -4802,102 +4517,6 @@ class $$ViajesTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$TrabajadoresTableFilterComposer get trabajadorId {
-    final $$TrabajadoresTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.trabajadorId,
-      referencedTable: $db.trabajadores,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TrabajadoresTableFilterComposer(
-            $db: $db,
-            $table: $db.trabajadores,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableFilterComposer get vehiculoId {
-    final $$VehiculosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableFilterComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> ingresosRefs(
-    Expression<bool> Function($$IngresosTableFilterComposer f) f,
-  ) {
-    final $$IngresosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.ingresos,
-      getReferencedColumn: (t) => t.viajeId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$IngresosTableFilterComposer(
-            $db: $db,
-            $table: $db.ingresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> egresosRefs(
-    Expression<bool> Function($$EgresosTableFilterComposer f) f,
-  ) {
-    final $$EgresosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.egresos,
-      getReferencedColumn: (t) => t.viajeId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EgresosTableFilterComposer(
-            $db: $db,
-            $table: $db.egresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ViajesTableOrderingComposer
@@ -4949,6 +4568,16 @@ class $$ViajesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get trabajadorId => $composableBuilder(
+    column: $table.trabajadorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get estado => $composableBuilder(
     column: $table.estado,
     builder: (column) => ColumnOrderings(column),
@@ -4963,52 +4592,6 @@ class $$ViajesTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$TrabajadoresTableOrderingComposer get trabajadorId {
-    final $$TrabajadoresTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.trabajadorId,
-      referencedTable: $db.trabajadores,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TrabajadoresTableOrderingComposer(
-            $db: $db,
-            $table: $db.trabajadores,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableOrderingComposer get vehiculoId {
-    final $$VehiculosTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableOrderingComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$ViajesTableAnnotationComposer
@@ -5050,6 +4633,16 @@ class $$ViajesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get trabajadorId => $composableBuilder(
+    column: $table.trabajadorId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => column,
+  );
+
   GeneratedColumnWithTypeConverter<ViajeEstado, int> get estado =>
       $composableBuilder(column: $table.estado, builder: (column) => column);
 
@@ -5058,102 +4651,6 @@ class $$ViajesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  $$TrabajadoresTableAnnotationComposer get trabajadorId {
-    final $$TrabajadoresTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.trabajadorId,
-      referencedTable: $db.trabajadores,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TrabajadoresTableAnnotationComposer(
-            $db: $db,
-            $table: $db.trabajadores,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableAnnotationComposer get vehiculoId {
-    final $$VehiculosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> ingresosRefs<T extends Object>(
-    Expression<T> Function($$IngresosTableAnnotationComposer a) f,
-  ) {
-    final $$IngresosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.ingresos,
-      getReferencedColumn: (t) => t.viajeId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$IngresosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.ingresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> egresosRefs<T extends Object>(
-    Expression<T> Function($$EgresosTableAnnotationComposer a) f,
-  ) {
-    final $$EgresosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.egresos,
-      getReferencedColumn: (t) => t.viajeId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EgresosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.egresos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ViajesTableTableManager
@@ -5167,14 +4664,9 @@ class $$ViajesTableTableManager
           $$ViajesTableAnnotationComposer,
           $$ViajesTableCreateCompanionBuilder,
           $$ViajesTableUpdateCompanionBuilder,
-          (Viaje, $$ViajesTableReferences),
+          (Viaje, BaseReferences<_$AppDatabase, $ViajesTable, Viaje>),
           Viaje,
-          PrefetchHooks Function({
-            bool trabajadorId,
-            bool vehiculoId,
-            bool ingresosRefs,
-            bool egresosRefs,
-          })
+          PrefetchHooks Function()
         > {
   $$ViajesTableTableManager(_$AppDatabase db, $ViajesTable table)
     : super(
@@ -5248,105 +4740,9 @@ class $$ViajesTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $$ViajesTableReferences(db, table, e)),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback:
-              ({
-                trabajadorId = false,
-                vehiculoId = false,
-                ingresosRefs = false,
-                egresosRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (ingresosRefs) db.ingresos,
-                    if (egresosRefs) db.egresos,
-                  ],
-                  addJoins:
-                      <
-                        T extends TableManagerState<
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic,
-                          dynamic
-                        >
-                      >(state) {
-                        if (trabajadorId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.trabajadorId,
-                            referencedTable: $$ViajesTableReferences
-                                ._trabajadorIdTable(db),
-                            referencedColumn: $$ViajesTableReferences
-                                ._trabajadorIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-                        if (vehiculoId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.vehiculoId,
-                            referencedTable: $$ViajesTableReferences
-                                ._vehiculoIdTable(db),
-                            referencedColumn: $$ViajesTableReferences
-                                ._vehiculoIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-
-                        return state;
-                      },
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (ingresosRefs)
-                        await $_getPrefetchedData<Viaje, $ViajesTable, Ingreso>(
-                          currentTable: table,
-                          referencedTable: $$ViajesTableReferences
-                              ._ingresosRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$ViajesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).ingresosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.viajeId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (egresosRefs)
-                        await $_getPrefetchedData<Viaje, $ViajesTable, Egreso>(
-                          currentTable: table,
-                          referencedTable: $$ViajesTableReferences
-                              ._egresosRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$ViajesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).egresosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.viajeId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -5361,57 +4757,32 @@ typedef $$ViajesTableProcessedTableManager =
       $$ViajesTableAnnotationComposer,
       $$ViajesTableCreateCompanionBuilder,
       $$ViajesTableUpdateCompanionBuilder,
-      (Viaje, $$ViajesTableReferences),
+      (Viaje, BaseReferences<_$AppDatabase, $ViajesTable, Viaje>),
       Viaje,
-      PrefetchHooks Function({
-        bool trabajadorId,
-        bool vehiculoId,
-        bool ingresosRefs,
-        bool egresosRefs,
-      })
+      PrefetchHooks Function()
     >;
-typedef $$IngresosTableCreateCompanionBuilder = IngresosCompanion Function({
-  Value<int> id,
-  required double monto,
-  required DateTime fecha,
-  required String concepto,
-  Value<int?> viajeId,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-typedef $$IngresosTableUpdateCompanionBuilder = IngresosCompanion Function({
-  Value<int> id,
-  Value<double> monto,
-  Value<DateTime> fecha,
-  Value<String> concepto,
-  Value<int?> viajeId,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-
-final class $$IngresosTableReferences
-    extends BaseReferences<_$AppDatabase, $IngresosTable, Ingreso> {
-  $$IngresosTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ViajesTable _viajeIdTable(_$AppDatabase db) =>
-      db.viajes.createAlias('ingresos__viaje_id__viajes__id');
-
-  $$ViajesTableProcessedTableManager? get viajeId {
-    final $_column = $_itemColumn<int>('viaje_id');
-    if ($_column == null) return null;
-    final manager = $$ViajesTableTableManager(
-      $_db,
-      $_db.viajes,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_viajeIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
+typedef $$IngresosTableCreateCompanionBuilder =
+    IngresosCompanion Function({
+      Value<int> id,
+      required double monto,
+      required DateTime fecha,
+      required String concepto,
+      Value<int?> viajeId,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$IngresosTableUpdateCompanionBuilder =
+    IngresosCompanion Function({
+      Value<int> id,
+      Value<double> monto,
+      Value<DateTime> fecha,
+      Value<String> concepto,
+      Value<int?> viajeId,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
 
 class $$IngresosTableFilterComposer
     extends Composer<_$AppDatabase, $IngresosTable> {
@@ -5442,6 +4813,11 @@ class $$IngresosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => ColumnFilters(column),
@@ -5456,29 +4832,6 @@ class $$IngresosTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$ViajesTableFilterComposer get viajeId {
-    final $$ViajesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableFilterComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$IngresosTableOrderingComposer
@@ -5510,6 +4863,11 @@ class $$IngresosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => ColumnOrderings(column),
@@ -5524,29 +4882,6 @@ class $$IngresosTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$ViajesTableOrderingComposer get viajeId {
-    final $$ViajesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableOrderingComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$IngresosTableAnnotationComposer
@@ -5570,6 +4905,9 @@ class $$IngresosTableAnnotationComposer
   GeneratedColumn<String> get concepto =>
       $composableBuilder(column: $table.concepto, builder: (column) => column);
 
+  GeneratedColumn<int> get viajeId =>
+      $composableBuilder(column: $table.viajeId, builder: (column) => column);
+
   GeneratedColumn<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => column,
@@ -5580,29 +4918,6 @@ class $$IngresosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  $$ViajesTableAnnotationComposer get viajeId {
-    final $$ViajesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$IngresosTableTableManager
@@ -5616,9 +4931,9 @@ class $$IngresosTableTableManager
           $$IngresosTableAnnotationComposer,
           $$IngresosTableCreateCompanionBuilder,
           $$IngresosTableUpdateCompanionBuilder,
-          (Ingreso, $$IngresosTableReferences),
+          (Ingreso, BaseReferences<_$AppDatabase, $IngresosTable, Ingreso>),
           Ingreso,
-          PrefetchHooks Function({bool viajeId})
+          PrefetchHooks Function()
         > {
   $$IngresosTableTableManager(_$AppDatabase db, $IngresosTable table)
     : super(
@@ -5672,52 +4987,9 @@ class $$IngresosTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$IngresosTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({viajeId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (viajeId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.viajeId,
-                        referencedTable: $$IngresosTableReferences
-                            ._viajeIdTable(db),
-                        referencedColumn: $$IngresosTableReferences
-                            ._viajeIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -5732,73 +5004,36 @@ typedef $$IngresosTableProcessedTableManager =
       $$IngresosTableAnnotationComposer,
       $$IngresosTableCreateCompanionBuilder,
       $$IngresosTableUpdateCompanionBuilder,
-      (Ingreso, $$IngresosTableReferences),
+      (Ingreso, BaseReferences<_$AppDatabase, $IngresosTable, Ingreso>),
       Ingreso,
-      PrefetchHooks Function({bool viajeId})
+      PrefetchHooks Function()
     >;
-typedef $$EgresosTableCreateCompanionBuilder = EgresosCompanion Function({
-  Value<int> id,
-  required double monto,
-  required DateTime fecha,
-  required EgresoCategoria categoria,
-  Value<String?> descripcion,
-  Value<int?> viajeId,
-  Value<int?> vehiculoId,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-typedef $$EgresosTableUpdateCompanionBuilder = EgresosCompanion Function({
-  Value<int> id,
-  Value<double> monto,
-  Value<DateTime> fecha,
-  Value<EgresoCategoria> categoria,
-  Value<String?> descripcion,
-  Value<int?> viajeId,
-  Value<int?> vehiculoId,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-
-final class $$EgresosTableReferences
-    extends BaseReferences<_$AppDatabase, $EgresosTable, Egreso> {
-  $$EgresosTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $ViajesTable _viajeIdTable(_$AppDatabase db) =>
-      db.viajes.createAlias('egresos__viaje_id__viajes__id');
-
-  $$ViajesTableProcessedTableManager? get viajeId {
-    final $_column = $_itemColumn<int>('viaje_id');
-    if ($_column == null) return null;
-    final manager = $$ViajesTableTableManager(
-      $_db,
-      $_db.viajes,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_viajeIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static $VehiculosTable _vehiculoIdTable(_$AppDatabase db) =>
-      db.vehiculos.createAlias('egresos__vehiculo_id__vehiculos__id');
-
-  $$VehiculosTableProcessedTableManager? get vehiculoId {
-    final $_column = $_itemColumn<int>('vehiculo_id');
-    if ($_column == null) return null;
-    final manager = $$VehiculosTableTableManager(
-      $_db,
-      $_db.vehiculos,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_vehiculoIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
+typedef $$EgresosTableCreateCompanionBuilder =
+    EgresosCompanion Function({
+      Value<int> id,
+      required double monto,
+      required DateTime fecha,
+      required EgresoCategoria categoria,
+      Value<String?> descripcion,
+      Value<int?> viajeId,
+      Value<int?> vehiculoId,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$EgresosTableUpdateCompanionBuilder =
+    EgresosCompanion Function({
+      Value<int> id,
+      Value<double> monto,
+      Value<DateTime> fecha,
+      Value<EgresoCategoria> categoria,
+      Value<String?> descripcion,
+      Value<int?> viajeId,
+      Value<int?> vehiculoId,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
 
 class $$EgresosTableFilterComposer
     extends Composer<_$AppDatabase, $EgresosTable> {
@@ -5835,6 +5070,16 @@ class $$EgresosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => ColumnFilters(column),
@@ -5849,52 +5094,6 @@ class $$EgresosTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$ViajesTableFilterComposer get viajeId {
-    final $$ViajesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableFilterComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableFilterComposer get vehiculoId {
-    final $$VehiculosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableFilterComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$EgresosTableOrderingComposer
@@ -5931,6 +5130,16 @@ class $$EgresosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => ColumnOrderings(column),
@@ -5945,52 +5154,6 @@ class $$EgresosTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$ViajesTableOrderingComposer get viajeId {
-    final $$ViajesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableOrderingComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableOrderingComposer get vehiculoId {
-    final $$VehiculosTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableOrderingComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$EgresosTableAnnotationComposer
@@ -6019,6 +5182,14 @@ class $$EgresosTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get viajeId =>
+      $composableBuilder(column: $table.viajeId, builder: (column) => column);
+
+  GeneratedColumn<int> get vehiculoId => $composableBuilder(
+    column: $table.vehiculoId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get comprobantePath => $composableBuilder(
     column: $table.comprobantePath,
     builder: (column) => column,
@@ -6029,52 +5200,6 @@ class $$EgresosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  $$ViajesTableAnnotationComposer get viajeId {
-    final $$ViajesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.viajeId,
-      referencedTable: $db.viajes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ViajesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.viajes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$VehiculosTableAnnotationComposer get vehiculoId {
-    final $$VehiculosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.vehiculoId,
-      referencedTable: $db.vehiculos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$VehiculosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.vehiculos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$EgresosTableTableManager
@@ -6088,9 +5213,9 @@ class $$EgresosTableTableManager
           $$EgresosTableAnnotationComposer,
           $$EgresosTableCreateCompanionBuilder,
           $$EgresosTableUpdateCompanionBuilder,
-          (Egreso, $$EgresosTableReferences),
+          (Egreso, BaseReferences<_$AppDatabase, $EgresosTable, Egreso>),
           Egreso,
-          PrefetchHooks Function({bool viajeId, bool vehiculoId})
+          PrefetchHooks Function()
         > {
   $$EgresosTableTableManager(_$AppDatabase db, $EgresosTable table)
     : super(
@@ -6152,64 +5277,9 @@ class $$EgresosTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$EgresosTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({viajeId = false, vehiculoId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (viajeId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.viajeId,
-                        referencedTable: $$EgresosTableReferences._viajeIdTable(
-                          db,
-                        ),
-                        referencedColumn: $$EgresosTableReferences
-                            ._viajeIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-                    if (vehiculoId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.vehiculoId,
-                        referencedTable: $$EgresosTableReferences
-                            ._vehiculoIdTable(db),
-                        referencedColumn: $$EgresosTableReferences
-                            ._vehiculoIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -6224,34 +5294,36 @@ typedef $$EgresosTableProcessedTableManager =
       $$EgresosTableAnnotationComposer,
       $$EgresosTableCreateCompanionBuilder,
       $$EgresosTableUpdateCompanionBuilder,
-      (Egreso, $$EgresosTableReferences),
+      (Egreso, BaseReferences<_$AppDatabase, $EgresosTable, Egreso>),
       Egreso,
-      PrefetchHooks Function({bool viajeId, bool vehiculoId})
+      PrefetchHooks Function()
     >;
-typedef $$ImpuestosTableCreateCompanionBuilder = ImpuestosCompanion Function({
-  Value<int> id,
-  required String tipo,
-  required String periodo,
-  required double monto,
-  required DateTime fechaVencimiento,
-  Value<DateTime?> fechaPago,
-  Value<ImpuestoEstado> estado,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
-typedef $$ImpuestosTableUpdateCompanionBuilder = ImpuestosCompanion Function({
-  Value<int> id,
-  Value<String> tipo,
-  Value<String> periodo,
-  Value<double> monto,
-  Value<DateTime> fechaVencimiento,
-  Value<DateTime?> fechaPago,
-  Value<ImpuestoEstado> estado,
-  Value<String?> comprobantePath,
-  Value<DateTime> createdAt,
-  Value<DateTime> updatedAt,
-});
+typedef $$ImpuestosTableCreateCompanionBuilder =
+    ImpuestosCompanion Function({
+      Value<int> id,
+      required String tipo,
+      required String periodo,
+      required double monto,
+      required DateTime fechaVencimiento,
+      Value<DateTime?> fechaPago,
+      Value<ImpuestoEstado> estado,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+typedef $$ImpuestosTableUpdateCompanionBuilder =
+    ImpuestosCompanion Function({
+      Value<int> id,
+      Value<String> tipo,
+      Value<String> periodo,
+      Value<double> monto,
+      Value<DateTime> fechaVencimiento,
+      Value<DateTime?> fechaPago,
+      Value<ImpuestoEstado> estado,
+      Value<String?> comprobantePath,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
 
 class $$ImpuestosTableFilterComposer
     extends Composer<_$AppDatabase, $ImpuestosTable> {

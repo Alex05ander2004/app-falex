@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/enums.dart';
 import '../../../../core/widgets/status_chip.dart';
+import 'vehiculo_display.dart';
 
 class VehiculoCard extends StatelessWidget {
   const VehiculoCard({super.key, required this.vehiculo, required this.onTap});
@@ -21,11 +22,30 @@ class VehiculoCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Icon(
-                vehiculo.tipo.toLowerCase().contains('remolque')
-                    ? Icons.rv_hookup_outlined
-                    : Icons.local_shipping_outlined,
-                color: theme.colorScheme.onSurfaceVariant,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    vehiculo.tipo == VehiculoTipo.trailer
+                        ? Icons.rv_hookup_outlined
+                        : Icons.local_shipping_outlined,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  if (vehiculo.color != null)
+                    Positioned(
+                      right: -2,
+                      bottom: -2,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: pinturaColorVehiculo(vehiculo.color!),
+                          border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -34,7 +54,10 @@ class VehiculoCard extends StatelessWidget {
                   children: [
                     Text(vehiculo.placa, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 2),
-                    Text(vehiculo.tipo, style: theme.textTheme.bodySmall),
+                    Text(
+                      etiquetaTipoVehiculo(vehiculo.tipo),
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),

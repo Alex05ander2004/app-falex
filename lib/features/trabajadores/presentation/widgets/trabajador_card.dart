@@ -41,7 +41,7 @@ class TrabajadorCard extends StatelessWidget {
                     Text(trabajador.nombre, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 2),
                     Text(
-                      '${trabajador.cargo} · DNI ${trabajador.dni}',
+                      'DNI ${trabajador.dni}',
                       style: theme.textTheme.bodySmall,
                     ),
                   ],

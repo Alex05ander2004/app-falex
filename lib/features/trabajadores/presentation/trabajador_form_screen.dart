@@ -26,9 +26,6 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
       TextEditingController(text: widget.trabajador?.dni ?? '');
   late final _telefonoCtrl =
       TextEditingController(text: widget.trabajador?.telefono ?? '');
-  late final _cargoCtrl = TextEditingController(
-    text: widget.trabajador?.cargo ?? 'Chofer',
-  );
   DateTime? _fechaIngreso;
   bool _guardando = false;
 
@@ -45,7 +42,6 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
     _nombreCtrl.dispose();
     _dniCtrl.dispose();
     _telefonoCtrl.dispose();
-    _cargoCtrl.dispose();
     super.dispose();
   }
 
@@ -63,7 +59,6 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
             telefono: Value(
               _telefonoCtrl.text.trim().isEmpty ? null : _telefonoCtrl.text.trim(),
             ),
-            cargo: Value(_cargoCtrl.text.trim()),
             fechaIngreso: Value(_fechaIngreso),
           ),
         );
@@ -75,7 +70,6 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
             telefono: Value(
               _telefonoCtrl.text.trim().isEmpty ? null : _telefonoCtrl.text.trim(),
             ),
-            cargo: Value(_cargoCtrl.text.trim()),
             fechaIngreso: Value(_fechaIngreso),
           ),
         );
@@ -178,15 +172,24 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _telefonoCtrl,
-              decoration: const InputDecoration(labelText: 'Teléfono (opcional)'),
+              decoration: const InputDecoration(
+                labelText: 'Teléfono (opcional)',
+                counterText: '',
+              ),
               keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _cargoCtrl,
-              decoration: const InputDecoration(labelText: 'Cargo'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Ingresa el cargo' : null,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(9),
+              ],
+              maxLength: 9,
+              validator: (v) {
+                final telefono = v?.trim() ?? '';
+                if (telefono.isEmpty) return null; // opcional
+                if (!RegExp(r'^9\d{8}$').hasMatch(telefono)) {
+                  return 'Debe tener 9 dígitos y empezar con 9';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             ListTile(

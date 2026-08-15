@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Gradle JVM crash dumps (dependen de la maquina, no del proyecto)
+android/hs_err_pid*.log

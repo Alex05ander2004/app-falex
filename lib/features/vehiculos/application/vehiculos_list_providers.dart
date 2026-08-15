@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/enum_labels.dart';
 import '../../../core/database/enums.dart';
 import '../data/vehiculos_repository.dart';
 
@@ -26,7 +27,7 @@ final vehiculosListadoProvider =
     return vehiculos
         .where((v) =>
             v.placa.toLowerCase().contains(busqueda) ||
-            v.tipo.toLowerCase().contains(busqueda))
+            etiquetaTipoVehiculo(v.tipo).toLowerCase().contains(busqueda))
         .toList();
   });
 });

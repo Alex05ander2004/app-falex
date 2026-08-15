@@ -7,8 +7,8 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/enums.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../data/vehiculos_repository.dart';
-
-const _tiposVehiculo = ['Tractocamión', 'Remolque', 'Camión rígido', 'Otro'];
+import 'widgets/vehiculo_color_picker.dart';
+import 'widgets/vehiculo_display.dart';
 
 /// Alta o edición de un vehículo. `vehiculo` nulo = alta.
 class VehiculoFormScreen extends ConsumerStatefulWidget {
@@ -27,10 +27,8 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
   late final _modeloCtrl = TextEditingController(text: widget.vehiculo?.modelo ?? '');
   late final _anioCtrl =
       TextEditingController(text: widget.vehiculo?.anio?.toString() ?? '');
-  late String _tipo = widget.vehiculo != null &&
-          _tiposVehiculo.contains(widget.vehiculo!.tipo)
-      ? widget.vehiculo!.tipo
-      : _tiposVehiculo.first;
+  late VehiculoTipo _tipo = widget.vehiculo?.tipo ?? VehiculoTipo.trailer;
+  VehiculoColor? _color;
   DateTime? _soatVencimiento;
   DateTime? _revisionVencimiento;
   bool _guardando = false;
@@ -40,6 +38,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
   @override
   void initState() {
     super.initState();
+    _color = widget.vehiculo?.color;
     _soatVencimiento = widget.vehiculo?.soatVencimiento;
     _revisionVencimiento = widget.vehiculo?.revisionTecnicaVencimiento;
   }
@@ -65,6 +64,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
           VehiculosCompanion(
             placa: Value(_placaCtrl.text.trim().toUpperCase()),
             tipo: Value(_tipo),
+            color: Value(_color),
             marca: Value(_marcaCtrl.text.trim().isEmpty ? null : _marcaCtrl.text.trim()),
             modelo: Value(_modeloCtrl.text.trim().isEmpty ? null : _modeloCtrl.text.trim()),
             anio: Value(anio),
@@ -77,6 +77,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
           VehiculosCompanion.insert(
             placa: _placaCtrl.text.trim().toUpperCase(),
             tipo: _tipo,
+            color: Value(_color),
             marca: Value(_marcaCtrl.text.trim().isEmpty ? null : _marcaCtrl.text.trim()),
             modelo: Value(_modeloCtrl.text.trim().isEmpty ? null : _modeloCtrl.text.trim()),
             anio: Value(anio),
@@ -140,20 +141,39 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
           children: [
             TextFormField(
               controller: _placaCtrl,
-              decoration: const InputDecoration(labelText: 'Placa'),
+              decoration: const InputDecoration(
+                labelText: 'Placa',
+                counterText: '',
+              ),
               textCapitalization: TextCapitalization.characters,
-              inputFormatters: [UpperCaseTextFormatter()],
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Ingresa la placa' : null,
+              inputFormatters: [
+                UpperCaseTextFormatter(),
+                LengthLimitingTextInputFormatter(6),
+              ],
+              maxLength: 6,
+              validator: (v) {
+                final placa = v?.trim() ?? '';
+                if (placa.isEmpty) return 'Ingresa la placa';
+                if (placa.length != 6) return 'La placa debe tener 6 caracteres';
+                return null;
+              },
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<VehiculoTipo>(
               initialValue: _tipo,
               decoration: const InputDecoration(labelText: 'Tipo'),
-              items: _tiposVehiculo
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+              items: VehiculoTipo.values
+                  .map((t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(etiquetaTipoVehiculo(t)),
+                      ))
                   .toList(),
               onChanged: (v) => setState(() => _tipo = v ?? _tipo),
+            ),
+            const SizedBox(height: 20),
+            VehiculoColorPicker(
+              seleccionado: _color,
+              onChanged: (c) => setState(() => _color = c),
             ),
             const SizedBox(height: 16),
             Row(
