@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/errors/app_exceptions.dart';
+import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../data/trabajadores_repository.dart';
 
 /// Alta o edición de un trabajador. `trabajador` nulo = alta.
@@ -120,6 +121,22 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
     }
   }
 
+  Future<void> _eliminar() async {
+    final ok = await confirmarEliminar(
+      context,
+      'Se borrará a ${widget.trabajador!.nombre} por completo. Esta acción '
+      'no se puede deshacer.',
+    );
+    if (!ok) return;
+    try {
+      await ref.read(trabajadoresRepositoryProvider).eliminar(widget.trabajador!.id);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } on ValidacionNegocioException catch (e) {
+      _mostrarError(e.mensaje);
+    }
+  }
+
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -217,6 +234,14 @@ class _TrabajadorFormScreenState extends ConsumerState<TrabajadorFormScreen> {
                       ? 'Dar de baja'
                       : 'Reactivar trabajador',
                 ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _eliminar,
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text('Eliminar definitivamente'),
               ),
             ],
           ],

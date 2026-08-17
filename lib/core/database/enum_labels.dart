@@ -23,3 +23,35 @@ String etiquetaColorVehiculo(VehiculoColor color) => switch (color) {
       VehiculoColor.naranja => 'Naranja',
       VehiculoColor.otro => 'Otro',
     };
+
+String etiquetaDestinoPrincipal(DestinoPrincipal destino) => switch (destino) {
+      DestinoPrincipal.cuzco => 'Cuzco',
+      DestinoPrincipal.juliaca => 'Juliaca',
+      DestinoPrincipal.mollendo => 'Mollendo',
+      DestinoPrincipal.camana => 'Camaná',
+      DestinoPrincipal.pedregal => 'Pedregal',
+      DestinoPrincipal.ilo => 'Ilo',
+      DestinoPrincipal.moquegua => 'Moquegua',
+      DestinoPrincipal.tacna => 'Tacna',
+    };
+
+String etiquetaViajeEstado(ViajeEstado estado) => switch (estado) {
+      ViajeEstado.programado => 'Programado',
+      ViajeEstado.enCurso => 'En curso',
+      ViajeEstado.finalizado => 'Finalizado',
+      ViajeEstado.cancelado => 'Cancelado',
+    };
+
+String etiquetaIngresoConcepto(IngresoConcepto concepto) => switch (concepto) {
+      IngresoConcepto.flete => 'Flete',
+      IngresoConcepto.otro => 'Otro',
+    };
+
+String etiquetaEgresoCategoria(EgresoCategoria categoria) => switch (categoria) {
+      EgresoCategoria.combustible => 'Combustible',
+      EgresoCategoria.peajes => 'Peajes',
+      EgresoCategoria.viaticos => 'Viáticos',
+      EgresoCategoria.mantenimiento => 'Mantenimiento',
+      EgresoCategoria.multas => 'Multas',
+      EgresoCategoria.otros => 'Otros',
+    };

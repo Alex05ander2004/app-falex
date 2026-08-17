@@ -29,6 +29,27 @@ enum VehiculoColor {
 /// Estado de un [Viaje] a lo largo de su ciclo de vida.
 enum ViajeEstado { programado, enCurso, finalizado, cancelado }
 
+/// Destinos principales que opera Falex. Un viaje siempre apunta a uno
+/// de estos; si en el camino se extiende a otra provincia, eso se
+/// registra aparte como una parada extra (texto libre, ver
+/// `ViajeParadas`) porque es un caso excepcional, no parte de la ruta
+/// habitual.
+enum DestinoPrincipal {
+  cuzco,
+  juliaca,
+  mollendo,
+  camana,
+  pedregal,
+  ilo,
+  moquegua,
+  tacna,
+}
+
+/// Concepto de un ingreso. `flete` es el pago que hace KR por un viaje y
+/// lleva descuento de detracción (4%, ver core/finance/detraccion.dart);
+/// `otro` es cualquier ingreso que no sea flete y no lleva detracción.
+enum IngresoConcepto { flete, otro }
+
 /// Categorías de egreso. Lista inicial acordada como punto de partida
 /// razonable (combustible, peajes, viáticos, mantenimiento, multas, otros)
 /// — ajustable con el dueño de Falex sin tocar el esquema, ya que es un

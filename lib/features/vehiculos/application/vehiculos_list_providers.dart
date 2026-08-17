@@ -32,6 +32,12 @@ final vehiculosListadoProvider =
   });
 });
 
+/// Vehículos activos, sin depender del filtro mutable de la pantalla de
+/// lista — para selectores como el de la Fase 3 (asignar un viaje).
+final vehiculosActivosProvider = StreamProvider.autoDispose<List<Vehiculo>>((ref) {
+  return ref.watch(vehiculosRepositoryProvider).watchAll(filtro: VehiculoEstado.activo);
+});
+
 /// Vehículos con SOAT o revisión técnica vencidos o por vencer en los
 /// próximos 30 días — alimenta el aviso en la lista (ver design/stitch:
 /// "Doc. por Vencer").

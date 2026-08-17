@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/enums.dart';
 import '../../../core/errors/app_exceptions.dart';
+import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../data/vehiculos_repository.dart';
 import 'widgets/vehiculo_color_picker.dart';
 import 'widgets/vehiculo_display.dart';
@@ -27,6 +28,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
   late final _modeloCtrl = TextEditingController(text: widget.vehiculo?.modelo ?? '');
   late final _anioCtrl =
       TextEditingController(text: widget.vehiculo?.anio?.toString() ?? '');
+  late final _mtcCtrl = TextEditingController(text: widget.vehiculo?.numeroMtc ?? '');
   late VehiculoTipo _tipo = widget.vehiculo?.tipo ?? VehiculoTipo.trailer;
   VehiculoColor? _color;
   DateTime? _soatVencimiento;
@@ -49,6 +51,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
     _marcaCtrl.dispose();
     _modeloCtrl.dispose();
     _anioCtrl.dispose();
+    _mtcCtrl.dispose();
     super.dispose();
   }
 
@@ -68,6 +71,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
             marca: Value(_marcaCtrl.text.trim().isEmpty ? null : _marcaCtrl.text.trim()),
             modelo: Value(_modeloCtrl.text.trim().isEmpty ? null : _modeloCtrl.text.trim()),
             anio: Value(anio),
+            numeroMtc: Value(_mtcCtrl.text.trim().isEmpty ? null : _mtcCtrl.text.trim()),
             soatVencimiento: Value(_soatVencimiento),
             revisionTecnicaVencimiento: Value(_revisionVencimiento),
           ),
@@ -81,6 +85,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
             marca: Value(_marcaCtrl.text.trim().isEmpty ? null : _marcaCtrl.text.trim()),
             modelo: Value(_modeloCtrl.text.trim().isEmpty ? null : _modeloCtrl.text.trim()),
             anio: Value(anio),
+            numeroMtc: Value(_mtcCtrl.text.trim().isEmpty ? null : _mtcCtrl.text.trim()),
             soatVencimiento: Value(_soatVencimiento),
             revisionTecnicaVencimiento: Value(_revisionVencimiento),
           ),
@@ -102,6 +107,22 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
       await ref
           .read(vehiculosRepositoryProvider)
           .cambiarEstado(widget.vehiculo!.id, estado);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } on ValidacionNegocioException catch (e) {
+      _mostrarError(e.mensaje);
+    }
+  }
+
+  Future<void> _eliminar() async {
+    final ok = await confirmarEliminar(
+      context,
+      'Se borrará el vehículo ${widget.vehiculo!.placa} por completo. Esta '
+      'acción no se puede deshacer.',
+    );
+    if (!ok) return;
+    try {
+      await ref.read(vehiculosRepositoryProvider).eliminar(widget.vehiculo!.id);
       if (!mounted) return;
       Navigator.of(context).pop();
     } on ValidacionNegocioException catch (e) {
@@ -148,6 +169,7 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
               textCapitalization: TextCapitalization.characters,
               inputFormatters: [
                 UpperCaseTextFormatter(),
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                 LengthLimitingTextInputFormatter(6),
               ],
               maxLength: 6,
@@ -155,6 +177,9 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
                 final placa = v?.trim() ?? '';
                 if (placa.isEmpty) return 'Ingresa la placa';
                 if (placa.length != 6) return 'La placa debe tener 6 caracteres';
+                if (!RegExp(r'^[A-Z0-9]+$').hasMatch(placa)) {
+                  return 'Solo letras y números, sin espacios ni símbolos';
+                }
                 return null;
               },
             ),
@@ -204,6 +229,13 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            TextFormField(
+              controller: _mtcCtrl,
+              decoration: const InputDecoration(
+                labelText: 'N.º de inscripción MTC (opcional)',
+              ),
+            ),
+            const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Vencimiento SOAT'),
@@ -243,6 +275,14 @@ class _VehiculoFormScreenState extends ConsumerState<VehiculoFormScreen> {
                     onSelected: (_) => _cambiarEstado(estado),
                   );
                 }).toList(),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: _eliminar,
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text('Eliminar definitivamente'),
               ),
             ],
           ],

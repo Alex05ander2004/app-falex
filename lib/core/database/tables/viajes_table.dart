@@ -14,8 +14,9 @@ class Viajes extends Table {
   /// Nula mientras el viaje no haya terminado.
   DateTimeColumn get fechaLlegada => dateTime().nullable()();
 
-  TextColumn get origen => text()();
-  TextColumn get destino => text()();
+  /// Casi siempre Arequipa — editable para el caso excepcional.
+  TextColumn get origen => text().withDefault(const Constant('Arequipa'))();
+  IntColumn get destinoPrincipal => intEnum<DestinoPrincipal>()();
   TextColumn get cliente => text().withDefault(const Constant('KR'))();
   TextColumn get carga => text().nullable()();
   RealColumn get kilometraje => real().nullable()();

@@ -68,6 +68,21 @@ class VehiculosRepository {
     );
   }
 
+  /// Borra el registro por completo — solo si nunca tuvo un viaje. Si ya
+  /// tiene viajes, solo cabe cambiar su estado con [cambiarEstado].
+  Future<void> eliminar(int id) async {
+    final viajesDelVehiculo = await (_db.select(_db.viajes)
+          ..where((v) => v.vehiculoId.equals(id)))
+        .get();
+    if (viajesDelVehiculo.isNotEmpty) {
+      throw ValidacionNegocioException(
+        'Este vehículo tiene ${viajesDelVehiculo.length} viaje(s) en su '
+        'historial — no se puede eliminar, solo cambiar su estado.',
+      );
+    }
+    await (_db.delete(_db.vehiculos)..where((v) => v.id.equals(id))).go();
+  }
+
   Exception _traducirError(SqliteException e) {
     if (e.message.contains('UNIQUE') && e.message.contains('placa')) {
       return const RegistroDuplicadoException(

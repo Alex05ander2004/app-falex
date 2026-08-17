@@ -11,6 +11,7 @@ import 'tables/impuestos_table.dart';
 import 'tables/ingresos_table.dart';
 import 'tables/trabajadores_table.dart';
 import 'tables/vehiculos_table.dart';
+import 'tables/viaje_paradas_table.dart';
 import 'tables/viajes_table.dart';
 
 part 'app_database.g.dart';
@@ -20,7 +21,15 @@ part 'app_database.g.dart';
 /// secciones 01 y 05). Cada feature habla con esta base solo a través
 /// de un repositorio (Fase 2+), nunca directo desde la UI.
 @DriftDatabase(
-  tables: [Trabajadores, Vehiculos, Viajes, Ingresos, Egresos, Impuestos],
+  tables: [
+    Trabajadores,
+    Vehiculos,
+    Viajes,
+    ViajeParadas,
+    Ingresos,
+    Egresos,
+    Impuestos,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

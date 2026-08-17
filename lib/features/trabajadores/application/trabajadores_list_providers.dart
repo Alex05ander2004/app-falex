@@ -17,6 +17,13 @@ final _trabajadoresStreamProvider =
       );
 });
 
+/// Trabajadores activos, sin depender del filtro mutable de la pantalla
+/// de lista — para selectores como el de la Fase 3 (asignar un viaje).
+final trabajadoresActivosProvider =
+    StreamProvider.autoDispose<List<Trabajador>>((ref) {
+  return ref.watch(trabajadoresRepositoryProvider).watchAll(soloActivos: true);
+});
+
 /// Lista ya filtrada por el texto de búsqueda — lista para pintar.
 final trabajadoresListadoProvider =
     Provider.autoDispose<AsyncValue<List<Trabajador>>>((ref) {

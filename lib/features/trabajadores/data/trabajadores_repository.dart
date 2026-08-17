@@ -71,6 +71,22 @@ class TrabajadoresRepository {
     );
   }
 
+  /// Borra el registro por completo — solo si nunca tuvo un viaje, para
+  /// no perder historial real. Si ya tiene viajes, solo cabe la baja
+  /// lógica de [cambiarActivo].
+  Future<void> eliminar(int id) async {
+    final viajesDelTrabajador = await (_db.select(_db.viajes)
+          ..where((v) => v.trabajadorId.equals(id)))
+        .get();
+    if (viajesDelTrabajador.isNotEmpty) {
+      throw ValidacionNegocioException(
+        'Este trabajador tiene ${viajesDelTrabajador.length} viaje(s) en su '
+        'historial — no se puede eliminar, solo dar de baja.',
+      );
+    }
+    await (_db.delete(_db.trabajadores)..where((t) => t.id.equals(id))).go();
+  }
+
   Exception _traducirError(SqliteException e) {
     if (e.message.contains('UNIQUE') && e.message.contains('dni')) {
       return const RegistroDuplicadoException(

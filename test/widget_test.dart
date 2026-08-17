@@ -8,7 +8,7 @@ import 'package:falex/core/database/app_database.dart';
 import 'package:falex/core/database/database_provider.dart';
 
 void main() {
-  testWidgets('FalexApp arranca y muestra la pestaña de Trabajadores',
+  testWidgets('FalexApp arranca y muestra la pestaña de Viajes',
       (WidgetTester tester) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
@@ -21,8 +21,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Trabajadores'), findsWidgets);
-    expect(find.text('Aún no hay trabajadores aquí'), findsOneWidget);
+    expect(find.text('Viajes'), findsWidgets);
+    expect(find.text('Aún no hay viajes aquí'), findsOneWidget);
 
     // Los streams de Drift agendan un timer al cerrarse; se desmonta el
     // árbol aquí (en vez de dejar que lo haga el framework al terminar

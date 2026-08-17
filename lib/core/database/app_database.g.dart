@@ -627,6 +627,17 @@ class $VehiculosTable extends Vehiculos
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _numeroMtcMeta = const VerificationMeta(
+    'numeroMtc',
+  );
+  @override
+  late final GeneratedColumn<String> numeroMtc = GeneratedColumn<String>(
+    'numero_mtc',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<VehiculoColor?, int> color =
       GeneratedColumn<int>(
@@ -701,6 +712,7 @@ class $VehiculosTable extends Vehiculos
     marca,
     modelo,
     anio,
+    numeroMtc,
     color,
     soatVencimiento,
     revisionTecnicaVencimiento,
@@ -747,6 +759,12 @@ class $VehiculosTable extends Vehiculos
       context.handle(
         _anioMeta,
         anio.isAcceptableOrUnknown(data['anio']!, _anioMeta),
+      );
+    }
+    if (data.containsKey('numero_mtc')) {
+      context.handle(
+        _numeroMtcMeta,
+        numeroMtc.isAcceptableOrUnknown(data['numero_mtc']!, _numeroMtcMeta),
       );
     }
     if (data.containsKey('soat_vencimiento')) {
@@ -814,6 +832,10 @@ class $VehiculosTable extends Vehiculos
         DriftSqlType.int,
         data['${effectivePrefix}anio'],
       ),
+      numeroMtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}numero_mtc'],
+      ),
       color: $VehiculosTable.$convertercolorn.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
@@ -871,6 +893,9 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
   final String? modelo;
   final int? anio;
 
+  /// N.º de inscripción en el Registro Nacional de Transporte (MTC).
+  final String? numeroMtc;
+
   /// Ayuda a identificar la unidad de un vistazo — opcional porque no
   /// siempre se conoce al registrarla.
   final VehiculoColor? color;
@@ -886,6 +911,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     this.marca,
     this.modelo,
     this.anio,
+    this.numeroMtc,
     this.color,
     this.soatVencimiento,
     this.revisionTecnicaVencimiento,
@@ -909,6 +935,9 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     }
     if (!nullToAbsent || anio != null) {
       map['anio'] = Variable<int>(anio);
+    }
+    if (!nullToAbsent || numeroMtc != null) {
+      map['numero_mtc'] = Variable<String>(numeroMtc);
     }
     if (!nullToAbsent || color != null) {
       map['color'] = Variable<int>(
@@ -945,6 +974,9 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           ? const Value.absent()
           : Value(modelo),
       anio: anio == null && nullToAbsent ? const Value.absent() : Value(anio),
+      numeroMtc: numeroMtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(numeroMtc),
       color: color == null && nullToAbsent
           ? const Value.absent()
           : Value(color),
@@ -975,6 +1007,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
       marca: serializer.fromJson<String?>(json['marca']),
       modelo: serializer.fromJson<String?>(json['modelo']),
       anio: serializer.fromJson<int?>(json['anio']),
+      numeroMtc: serializer.fromJson<String?>(json['numeroMtc']),
       color: $VehiculosTable.$convertercolorn.fromJson(
         serializer.fromJson<int?>(json['color']),
       ),
@@ -1001,6 +1034,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
       'marca': serializer.toJson<String?>(marca),
       'modelo': serializer.toJson<String?>(modelo),
       'anio': serializer.toJson<int?>(anio),
+      'numeroMtc': serializer.toJson<String?>(numeroMtc),
       'color': serializer.toJson<int?>(
         $VehiculosTable.$convertercolorn.toJson(color),
       ),
@@ -1023,6 +1057,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     Value<String?> marca = const Value.absent(),
     Value<String?> modelo = const Value.absent(),
     Value<int?> anio = const Value.absent(),
+    Value<String?> numeroMtc = const Value.absent(),
     Value<VehiculoColor?> color = const Value.absent(),
     Value<DateTime?> soatVencimiento = const Value.absent(),
     Value<DateTime?> revisionTecnicaVencimiento = const Value.absent(),
@@ -1036,6 +1071,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     marca: marca.present ? marca.value : this.marca,
     modelo: modelo.present ? modelo.value : this.modelo,
     anio: anio.present ? anio.value : this.anio,
+    numeroMtc: numeroMtc.present ? numeroMtc.value : this.numeroMtc,
     color: color.present ? color.value : this.color,
     soatVencimiento: soatVencimiento.present
         ? soatVencimiento.value
@@ -1055,6 +1091,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
       marca: data.marca.present ? data.marca.value : this.marca,
       modelo: data.modelo.present ? data.modelo.value : this.modelo,
       anio: data.anio.present ? data.anio.value : this.anio,
+      numeroMtc: data.numeroMtc.present ? data.numeroMtc.value : this.numeroMtc,
       color: data.color.present ? data.color.value : this.color,
       soatVencimiento: data.soatVencimiento.present
           ? data.soatVencimiento.value
@@ -1077,6 +1114,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           ..write('marca: $marca, ')
           ..write('modelo: $modelo, ')
           ..write('anio: $anio, ')
+          ..write('numeroMtc: $numeroMtc, ')
           ..write('color: $color, ')
           ..write('soatVencimiento: $soatVencimiento, ')
           ..write('revisionTecnicaVencimiento: $revisionTecnicaVencimiento, ')
@@ -1095,6 +1133,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
     marca,
     modelo,
     anio,
+    numeroMtc,
     color,
     soatVencimiento,
     revisionTecnicaVencimiento,
@@ -1112,6 +1151,7 @@ class Vehiculo extends DataClass implements Insertable<Vehiculo> {
           other.marca == this.marca &&
           other.modelo == this.modelo &&
           other.anio == this.anio &&
+          other.numeroMtc == this.numeroMtc &&
           other.color == this.color &&
           other.soatVencimiento == this.soatVencimiento &&
           other.revisionTecnicaVencimiento == this.revisionTecnicaVencimiento &&
@@ -1127,6 +1167,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
   final Value<String?> marca;
   final Value<String?> modelo;
   final Value<int?> anio;
+  final Value<String?> numeroMtc;
   final Value<VehiculoColor?> color;
   final Value<DateTime?> soatVencimiento;
   final Value<DateTime?> revisionTecnicaVencimiento;
@@ -1140,6 +1181,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     this.marca = const Value.absent(),
     this.modelo = const Value.absent(),
     this.anio = const Value.absent(),
+    this.numeroMtc = const Value.absent(),
     this.color = const Value.absent(),
     this.soatVencimiento = const Value.absent(),
     this.revisionTecnicaVencimiento = const Value.absent(),
@@ -1154,6 +1196,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     this.marca = const Value.absent(),
     this.modelo = const Value.absent(),
     this.anio = const Value.absent(),
+    this.numeroMtc = const Value.absent(),
     this.color = const Value.absent(),
     this.soatVencimiento = const Value.absent(),
     this.revisionTecnicaVencimiento = const Value.absent(),
@@ -1169,6 +1212,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     Expression<String>? marca,
     Expression<String>? modelo,
     Expression<int>? anio,
+    Expression<String>? numeroMtc,
     Expression<int>? color,
     Expression<DateTime>? soatVencimiento,
     Expression<DateTime>? revisionTecnicaVencimiento,
@@ -1183,6 +1227,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
       if (marca != null) 'marca': marca,
       if (modelo != null) 'modelo': modelo,
       if (anio != null) 'anio': anio,
+      if (numeroMtc != null) 'numero_mtc': numeroMtc,
       if (color != null) 'color': color,
       if (soatVencimiento != null) 'soat_vencimiento': soatVencimiento,
       if (revisionTecnicaVencimiento != null)
@@ -1200,6 +1245,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     Value<String?>? marca,
     Value<String?>? modelo,
     Value<int?>? anio,
+    Value<String?>? numeroMtc,
     Value<VehiculoColor?>? color,
     Value<DateTime?>? soatVencimiento,
     Value<DateTime?>? revisionTecnicaVencimiento,
@@ -1214,6 +1260,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
       marca: marca ?? this.marca,
       modelo: modelo ?? this.modelo,
       anio: anio ?? this.anio,
+      numeroMtc: numeroMtc ?? this.numeroMtc,
       color: color ?? this.color,
       soatVencimiento: soatVencimiento ?? this.soatVencimiento,
       revisionTecnicaVencimiento:
@@ -1246,6 +1293,9 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
     }
     if (anio.present) {
       map['anio'] = Variable<int>(anio.value);
+    }
+    if (numeroMtc.present) {
+      map['numero_mtc'] = Variable<String>(numeroMtc.value);
     }
     if (color.present) {
       map['color'] = Variable<int>(
@@ -1283,6 +1333,7 @@ class VehiculosCompanion extends UpdateCompanion<Vehiculo> {
           ..write('marca: $marca, ')
           ..write('modelo: $modelo, ')
           ..write('anio: $anio, ')
+          ..write('numeroMtc: $numeroMtc, ')
           ..write('color: $color, ')
           ..write('soatVencimiento: $soatVencimiento, ')
           ..write('revisionTecnicaVencimiento: $revisionTecnicaVencimiento, ')
@@ -1341,19 +1392,18 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _destinoMeta = const VerificationMeta(
-    'destino',
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Arequipa'),
   );
   @override
-  late final GeneratedColumn<String> destino = GeneratedColumn<String>(
-    'destino',
+  late final GeneratedColumnWithTypeConverter<DestinoPrincipal, int>
+  destinoPrincipal = GeneratedColumn<int>(
+    'destino_principal',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
-  );
+  ).withConverter<DestinoPrincipal>($ViajesTable.$converterdestinoPrincipal);
   static const VerificationMeta _clienteMeta = const VerificationMeta(
     'cliente',
   );
@@ -1448,7 +1498,7 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
     fechaSalida,
     fechaLlegada,
     origen,
-    destino,
+    destinoPrincipal,
     cliente,
     carga,
     kilometraje,
@@ -1498,16 +1548,6 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
         _origenMeta,
         origen.isAcceptableOrUnknown(data['origen']!, _origenMeta),
       );
-    } else if (isInserting) {
-      context.missing(_origenMeta);
-    }
-    if (data.containsKey('destino')) {
-      context.handle(
-        _destinoMeta,
-        destino.isAcceptableOrUnknown(data['destino']!, _destinoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_destinoMeta);
     }
     if (data.containsKey('cliente')) {
       context.handle(
@@ -1586,10 +1626,12 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
         DriftSqlType.string,
         data['${effectivePrefix}origen'],
       )!,
-      destino: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}destino'],
-      )!,
+      destinoPrincipal: $ViajesTable.$converterdestinoPrincipal.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}destino_principal'],
+        )!,
+      ),
       cliente: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}cliente'],
@@ -1632,6 +1674,10 @@ class $ViajesTable extends Viajes with TableInfo<$ViajesTable, Viaje> {
     return $ViajesTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<DestinoPrincipal, int, int>
+  $converterdestinoPrincipal = const EnumIndexConverter<DestinoPrincipal>(
+    DestinoPrincipal.values,
+  );
   static JsonTypeConverter2<ViajeEstado, int, int> $converterestado =
       const EnumIndexConverter<ViajeEstado>(ViajeEstado.values);
 }
@@ -1642,8 +1688,10 @@ class Viaje extends DataClass implements Insertable<Viaje> {
 
   /// Nula mientras el viaje no haya terminado.
   final DateTime? fechaLlegada;
+
+  /// Casi siempre Arequipa — editable para el caso excepcional.
   final String origen;
-  final String destino;
+  final DestinoPrincipal destinoPrincipal;
   final String cliente;
   final String? carga;
   final double? kilometraje;
@@ -1657,7 +1705,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
     required this.fechaSalida,
     this.fechaLlegada,
     required this.origen,
-    required this.destino,
+    required this.destinoPrincipal,
     required this.cliente,
     this.carga,
     this.kilometraje,
@@ -1676,7 +1724,11 @@ class Viaje extends DataClass implements Insertable<Viaje> {
       map['fecha_llegada'] = Variable<DateTime>(fechaLlegada);
     }
     map['origen'] = Variable<String>(origen);
-    map['destino'] = Variable<String>(destino);
+    {
+      map['destino_principal'] = Variable<int>(
+        $ViajesTable.$converterdestinoPrincipal.toSql(destinoPrincipal),
+      );
+    }
     map['cliente'] = Variable<String>(cliente);
     if (!nullToAbsent || carga != null) {
       map['carga'] = Variable<String>(carga);
@@ -1704,7 +1756,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
           ? const Value.absent()
           : Value(fechaLlegada),
       origen: Value(origen),
-      destino: Value(destino),
+      destinoPrincipal: Value(destinoPrincipal),
       cliente: Value(cliente),
       carga: carga == null && nullToAbsent
           ? const Value.absent()
@@ -1730,7 +1782,9 @@ class Viaje extends DataClass implements Insertable<Viaje> {
       fechaSalida: serializer.fromJson<DateTime>(json['fechaSalida']),
       fechaLlegada: serializer.fromJson<DateTime?>(json['fechaLlegada']),
       origen: serializer.fromJson<String>(json['origen']),
-      destino: serializer.fromJson<String>(json['destino']),
+      destinoPrincipal: $ViajesTable.$converterdestinoPrincipal.fromJson(
+        serializer.fromJson<int>(json['destinoPrincipal']),
+      ),
       cliente: serializer.fromJson<String>(json['cliente']),
       carga: serializer.fromJson<String?>(json['carga']),
       kilometraje: serializer.fromJson<double?>(json['kilometraje']),
@@ -1751,7 +1805,9 @@ class Viaje extends DataClass implements Insertable<Viaje> {
       'fechaSalida': serializer.toJson<DateTime>(fechaSalida),
       'fechaLlegada': serializer.toJson<DateTime?>(fechaLlegada),
       'origen': serializer.toJson<String>(origen),
-      'destino': serializer.toJson<String>(destino),
+      'destinoPrincipal': serializer.toJson<int>(
+        $ViajesTable.$converterdestinoPrincipal.toJson(destinoPrincipal),
+      ),
       'cliente': serializer.toJson<String>(cliente),
       'carga': serializer.toJson<String?>(carga),
       'kilometraje': serializer.toJson<double?>(kilometraje),
@@ -1770,7 +1826,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
     DateTime? fechaSalida,
     Value<DateTime?> fechaLlegada = const Value.absent(),
     String? origen,
-    String? destino,
+    DestinoPrincipal? destinoPrincipal,
     String? cliente,
     Value<String?> carga = const Value.absent(),
     Value<double?> kilometraje = const Value.absent(),
@@ -1784,7 +1840,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
     fechaSalida: fechaSalida ?? this.fechaSalida,
     fechaLlegada: fechaLlegada.present ? fechaLlegada.value : this.fechaLlegada,
     origen: origen ?? this.origen,
-    destino: destino ?? this.destino,
+    destinoPrincipal: destinoPrincipal ?? this.destinoPrincipal,
     cliente: cliente ?? this.cliente,
     carga: carga.present ? carga.value : this.carga,
     kilometraje: kilometraje.present ? kilometraje.value : this.kilometraje,
@@ -1804,7 +1860,9 @@ class Viaje extends DataClass implements Insertable<Viaje> {
           ? data.fechaLlegada.value
           : this.fechaLlegada,
       origen: data.origen.present ? data.origen.value : this.origen,
-      destino: data.destino.present ? data.destino.value : this.destino,
+      destinoPrincipal: data.destinoPrincipal.present
+          ? data.destinoPrincipal.value
+          : this.destinoPrincipal,
       cliente: data.cliente.present ? data.cliente.value : this.cliente,
       carga: data.carga.present ? data.carga.value : this.carga,
       kilometraje: data.kilometraje.present
@@ -1829,7 +1887,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
           ..write('fechaSalida: $fechaSalida, ')
           ..write('fechaLlegada: $fechaLlegada, ')
           ..write('origen: $origen, ')
-          ..write('destino: $destino, ')
+          ..write('destinoPrincipal: $destinoPrincipal, ')
           ..write('cliente: $cliente, ')
           ..write('carga: $carga, ')
           ..write('kilometraje: $kilometraje, ')
@@ -1848,7 +1906,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
     fechaSalida,
     fechaLlegada,
     origen,
-    destino,
+    destinoPrincipal,
     cliente,
     carga,
     kilometraje,
@@ -1866,7 +1924,7 @@ class Viaje extends DataClass implements Insertable<Viaje> {
           other.fechaSalida == this.fechaSalida &&
           other.fechaLlegada == this.fechaLlegada &&
           other.origen == this.origen &&
-          other.destino == this.destino &&
+          other.destinoPrincipal == this.destinoPrincipal &&
           other.cliente == this.cliente &&
           other.carga == this.carga &&
           other.kilometraje == this.kilometraje &&
@@ -1882,7 +1940,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
   final Value<DateTime> fechaSalida;
   final Value<DateTime?> fechaLlegada;
   final Value<String> origen;
-  final Value<String> destino;
+  final Value<DestinoPrincipal> destinoPrincipal;
   final Value<String> cliente;
   final Value<String?> carga;
   final Value<double?> kilometraje;
@@ -1896,7 +1954,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     this.fechaSalida = const Value.absent(),
     this.fechaLlegada = const Value.absent(),
     this.origen = const Value.absent(),
-    this.destino = const Value.absent(),
+    this.destinoPrincipal = const Value.absent(),
     this.cliente = const Value.absent(),
     this.carga = const Value.absent(),
     this.kilometraje = const Value.absent(),
@@ -1910,8 +1968,8 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     this.id = const Value.absent(),
     required DateTime fechaSalida,
     this.fechaLlegada = const Value.absent(),
-    required String origen,
-    required String destino,
+    this.origen = const Value.absent(),
+    required DestinoPrincipal destinoPrincipal,
     this.cliente = const Value.absent(),
     this.carga = const Value.absent(),
     this.kilometraje = const Value.absent(),
@@ -1921,8 +1979,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : fechaSalida = Value(fechaSalida),
-       origen = Value(origen),
-       destino = Value(destino),
+       destinoPrincipal = Value(destinoPrincipal),
        trabajadorId = Value(trabajadorId),
        vehiculoId = Value(vehiculoId);
   static Insertable<Viaje> custom({
@@ -1930,7 +1987,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     Expression<DateTime>? fechaSalida,
     Expression<DateTime>? fechaLlegada,
     Expression<String>? origen,
-    Expression<String>? destino,
+    Expression<int>? destinoPrincipal,
     Expression<String>? cliente,
     Expression<String>? carga,
     Expression<double>? kilometraje,
@@ -1945,7 +2002,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
       if (fechaSalida != null) 'fecha_salida': fechaSalida,
       if (fechaLlegada != null) 'fecha_llegada': fechaLlegada,
       if (origen != null) 'origen': origen,
-      if (destino != null) 'destino': destino,
+      if (destinoPrincipal != null) 'destino_principal': destinoPrincipal,
       if (cliente != null) 'cliente': cliente,
       if (carga != null) 'carga': carga,
       if (kilometraje != null) 'kilometraje': kilometraje,
@@ -1962,7 +2019,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     Value<DateTime>? fechaSalida,
     Value<DateTime?>? fechaLlegada,
     Value<String>? origen,
-    Value<String>? destino,
+    Value<DestinoPrincipal>? destinoPrincipal,
     Value<String>? cliente,
     Value<String?>? carga,
     Value<double?>? kilometraje,
@@ -1977,7 +2034,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
       fechaSalida: fechaSalida ?? this.fechaSalida,
       fechaLlegada: fechaLlegada ?? this.fechaLlegada,
       origen: origen ?? this.origen,
-      destino: destino ?? this.destino,
+      destinoPrincipal: destinoPrincipal ?? this.destinoPrincipal,
       cliente: cliente ?? this.cliente,
       carga: carga ?? this.carga,
       kilometraje: kilometraje ?? this.kilometraje,
@@ -2004,8 +2061,10 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
     if (origen.present) {
       map['origen'] = Variable<String>(origen.value);
     }
-    if (destino.present) {
-      map['destino'] = Variable<String>(destino.value);
+    if (destinoPrincipal.present) {
+      map['destino_principal'] = Variable<int>(
+        $ViajesTable.$converterdestinoPrincipal.toSql(destinoPrincipal.value),
+      );
     }
     if (cliente.present) {
       map['cliente'] = Variable<String>(cliente.value);
@@ -2043,7 +2102,7 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
           ..write('fechaSalida: $fechaSalida, ')
           ..write('fechaLlegada: $fechaLlegada, ')
           ..write('origen: $origen, ')
-          ..write('destino: $destino, ')
+          ..write('destinoPrincipal: $destinoPrincipal, ')
           ..write('cliente: $cliente, ')
           ..write('carga: $carga, ')
           ..write('kilometraje: $kilometraje, ')
@@ -2052,6 +2111,369 @@ class ViajesCompanion extends UpdateCompanion<Viaje> {
           ..write('estado: $estado, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ViajeParadasTable extends ViajeParadas
+    with TableInfo<$ViajeParadasTable, ViajeParada> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ViajeParadasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _viajeIdMeta = const VerificationMeta(
+    'viajeId',
+  );
+  @override
+  late final GeneratedColumn<int> viajeId = GeneratedColumn<int>(
+    'viaje_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _provinciaMeta = const VerificationMeta(
+    'provincia',
+  );
+  @override
+  late final GeneratedColumn<String> provincia = GeneratedColumn<String>(
+    'provincia',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 120,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaSalidaMeta = const VerificationMeta(
+    'fechaSalida',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaSalida = GeneratedColumn<DateTime>(
+    'fecha_salida',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    viajeId,
+    provincia,
+    fechaSalida,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'viaje_paradas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ViajeParada> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('viaje_id')) {
+      context.handle(
+        _viajeIdMeta,
+        viajeId.isAcceptableOrUnknown(data['viaje_id']!, _viajeIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_viajeIdMeta);
+    }
+    if (data.containsKey('provincia')) {
+      context.handle(
+        _provinciaMeta,
+        provincia.isAcceptableOrUnknown(data['provincia']!, _provinciaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_provinciaMeta);
+    }
+    if (data.containsKey('fecha_salida')) {
+      context.handle(
+        _fechaSalidaMeta,
+        fechaSalida.isAcceptableOrUnknown(
+          data['fecha_salida']!,
+          _fechaSalidaMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaSalidaMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ViajeParada map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ViajeParada(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      viajeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}viaje_id'],
+      )!,
+      provincia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provincia'],
+      )!,
+      fechaSalida: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_salida'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ViajeParadasTable createAlias(String alias) {
+    return $ViajeParadasTable(attachedDatabase, alias);
+  }
+}
+
+class ViajeParada extends DataClass implements Insertable<ViajeParada> {
+  final int id;
+  final int viajeId;
+  final String provincia;
+
+  /// Día en que el viaje partió hacia esta provincia extra, desde el
+  /// destino principal.
+  final DateTime fechaSalida;
+  final DateTime createdAt;
+  const ViajeParada({
+    required this.id,
+    required this.viajeId,
+    required this.provincia,
+    required this.fechaSalida,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['viaje_id'] = Variable<int>(viajeId);
+    map['provincia'] = Variable<String>(provincia);
+    map['fecha_salida'] = Variable<DateTime>(fechaSalida);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ViajeParadasCompanion toCompanion(bool nullToAbsent) {
+    return ViajeParadasCompanion(
+      id: Value(id),
+      viajeId: Value(viajeId),
+      provincia: Value(provincia),
+      fechaSalida: Value(fechaSalida),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ViajeParada.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ViajeParada(
+      id: serializer.fromJson<int>(json['id']),
+      viajeId: serializer.fromJson<int>(json['viajeId']),
+      provincia: serializer.fromJson<String>(json['provincia']),
+      fechaSalida: serializer.fromJson<DateTime>(json['fechaSalida']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'viajeId': serializer.toJson<int>(viajeId),
+      'provincia': serializer.toJson<String>(provincia),
+      'fechaSalida': serializer.toJson<DateTime>(fechaSalida),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ViajeParada copyWith({
+    int? id,
+    int? viajeId,
+    String? provincia,
+    DateTime? fechaSalida,
+    DateTime? createdAt,
+  }) => ViajeParada(
+    id: id ?? this.id,
+    viajeId: viajeId ?? this.viajeId,
+    provincia: provincia ?? this.provincia,
+    fechaSalida: fechaSalida ?? this.fechaSalida,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ViajeParada copyWithCompanion(ViajeParadasCompanion data) {
+    return ViajeParada(
+      id: data.id.present ? data.id.value : this.id,
+      viajeId: data.viajeId.present ? data.viajeId.value : this.viajeId,
+      provincia: data.provincia.present ? data.provincia.value : this.provincia,
+      fechaSalida: data.fechaSalida.present
+          ? data.fechaSalida.value
+          : this.fechaSalida,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ViajeParada(')
+          ..write('id: $id, ')
+          ..write('viajeId: $viajeId, ')
+          ..write('provincia: $provincia, ')
+          ..write('fechaSalida: $fechaSalida, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, viajeId, provincia, fechaSalida, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ViajeParada &&
+          other.id == this.id &&
+          other.viajeId == this.viajeId &&
+          other.provincia == this.provincia &&
+          other.fechaSalida == this.fechaSalida &&
+          other.createdAt == this.createdAt);
+}
+
+class ViajeParadasCompanion extends UpdateCompanion<ViajeParada> {
+  final Value<int> id;
+  final Value<int> viajeId;
+  final Value<String> provincia;
+  final Value<DateTime> fechaSalida;
+  final Value<DateTime> createdAt;
+  const ViajeParadasCompanion({
+    this.id = const Value.absent(),
+    this.viajeId = const Value.absent(),
+    this.provincia = const Value.absent(),
+    this.fechaSalida = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ViajeParadasCompanion.insert({
+    this.id = const Value.absent(),
+    required int viajeId,
+    required String provincia,
+    required DateTime fechaSalida,
+    this.createdAt = const Value.absent(),
+  }) : viajeId = Value(viajeId),
+       provincia = Value(provincia),
+       fechaSalida = Value(fechaSalida);
+  static Insertable<ViajeParada> custom({
+    Expression<int>? id,
+    Expression<int>? viajeId,
+    Expression<String>? provincia,
+    Expression<DateTime>? fechaSalida,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (viajeId != null) 'viaje_id': viajeId,
+      if (provincia != null) 'provincia': provincia,
+      if (fechaSalida != null) 'fecha_salida': fechaSalida,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ViajeParadasCompanion copyWith({
+    Value<int>? id,
+    Value<int>? viajeId,
+    Value<String>? provincia,
+    Value<DateTime>? fechaSalida,
+    Value<DateTime>? createdAt,
+  }) {
+    return ViajeParadasCompanion(
+      id: id ?? this.id,
+      viajeId: viajeId ?? this.viajeId,
+      provincia: provincia ?? this.provincia,
+      fechaSalida: fechaSalida ?? this.fechaSalida,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (viajeId.present) {
+      map['viaje_id'] = Variable<int>(viajeId.value);
+    }
+    if (provincia.present) {
+      map['provincia'] = Variable<String>(provincia.value);
+    }
+    if (fechaSalida.present) {
+      map['fecha_salida'] = Variable<DateTime>(fechaSalida.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ViajeParadasCompanion(')
+          ..write('id: $id, ')
+          ..write('viajeId: $viajeId, ')
+          ..write('provincia: $provincia, ')
+          ..write('fechaSalida: $fechaSalida, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -2093,16 +2515,48 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _conceptoMeta = const VerificationMeta(
-    'concepto',
+  @override
+  late final GeneratedColumnWithTypeConverter<IngresoConcepto, int> concepto =
+      GeneratedColumn<int>(
+        'concepto',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<IngresoConcepto>($IngresosTable.$converterconcepto);
+  static const VerificationMeta _detraccionMeta = const VerificationMeta(
+    'detraccion',
   );
   @override
-  late final GeneratedColumn<String> concepto = GeneratedColumn<String>(
-    'concepto',
+  late final GeneratedColumn<double> detraccion = GeneratedColumn<double>(
+    'detraccion',
     aliasedName,
     false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _numeroFacturaMeta = const VerificationMeta(
+    'numeroFactura',
+  );
+  @override
+  late final GeneratedColumn<String> numeroFactura = GeneratedColumn<String>(
+    'numero_factura',
+    aliasedName,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _destinoFleteMeta = const VerificationMeta(
+    'destinoFlete',
+  );
+  @override
+  late final GeneratedColumn<String> destinoFlete = GeneratedColumn<String>(
+    'destino_flete',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _viajeIdMeta = const VerificationMeta(
     'viajeId',
@@ -2156,6 +2610,9 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     monto,
     fecha,
     concepto,
+    detraccion,
+    numeroFactura,
+    destinoFlete,
     viajeId,
     comprobantePath,
     createdAt,
@@ -2192,13 +2649,29 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     } else if (isInserting) {
       context.missing(_fechaMeta);
     }
-    if (data.containsKey('concepto')) {
+    if (data.containsKey('detraccion')) {
       context.handle(
-        _conceptoMeta,
-        concepto.isAcceptableOrUnknown(data['concepto']!, _conceptoMeta),
+        _detraccionMeta,
+        detraccion.isAcceptableOrUnknown(data['detraccion']!, _detraccionMeta),
       );
-    } else if (isInserting) {
-      context.missing(_conceptoMeta);
+    }
+    if (data.containsKey('numero_factura')) {
+      context.handle(
+        _numeroFacturaMeta,
+        numeroFactura.isAcceptableOrUnknown(
+          data['numero_factura']!,
+          _numeroFacturaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('destino_flete')) {
+      context.handle(
+        _destinoFleteMeta,
+        destinoFlete.isAcceptableOrUnknown(
+          data['destino_flete']!,
+          _destinoFleteMeta,
+        ),
+      );
     }
     if (data.containsKey('viaje_id')) {
       context.handle(
@@ -2248,10 +2721,24 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}fecha'],
       )!,
-      concepto: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}concepto'],
+      concepto: $IngresosTable.$converterconcepto.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}concepto'],
+        )!,
+      ),
+      detraccion: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}detraccion'],
       )!,
+      numeroFactura: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}numero_factura'],
+      ),
+      destinoFlete: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}destino_flete'],
+      ),
       viajeId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}viaje_id'],
@@ -2275,13 +2762,32 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
   $IngresosTable createAlias(String alias) {
     return $IngresosTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<IngresoConcepto, int, int> $converterconcepto =
+      const EnumIndexConverter<IngresoConcepto>(IngresoConcepto.values);
 }
 
 class Ingreso extends DataClass implements Insertable<Ingreso> {
   final int id;
+
+  /// Monto bruto, el que figura en la factura — no lo que realmente
+  /// entra a la cuenta si es un flete (ver [detraccion]).
   final double monto;
   final DateTime fecha;
-  final String concepto;
+  final IngresoConcepto concepto;
+
+  /// Se va directo a la cuenta de detracciones, nunca a la cuenta
+  /// corriente. 0 salvo que [concepto] sea `flete` — ver
+  /// core/finance/detraccion.dart.
+  final double detraccion;
+
+  /// Número de factura del flete, para ubicarla físicamente después.
+  final String? numeroFactura;
+
+  /// A qué destino corresponde este flete: el destino principal del
+  /// viaje o una de sus paradas extra — un viaje puede cobrar un flete
+  /// distinto por cada tramo. Solo aplica cuando [concepto] es `flete`.
+  final String? destinoFlete;
   final int? viajeId;
 
   /// Ruta local a la foto de la boleta/factura, si se adjuntó una.
@@ -2293,6 +2799,9 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     required this.monto,
     required this.fecha,
     required this.concepto,
+    required this.detraccion,
+    this.numeroFactura,
+    this.destinoFlete,
     this.viajeId,
     this.comprobantePath,
     required this.createdAt,
@@ -2304,7 +2813,18 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     map['id'] = Variable<int>(id);
     map['monto'] = Variable<double>(monto);
     map['fecha'] = Variable<DateTime>(fecha);
-    map['concepto'] = Variable<String>(concepto);
+    {
+      map['concepto'] = Variable<int>(
+        $IngresosTable.$converterconcepto.toSql(concepto),
+      );
+    }
+    map['detraccion'] = Variable<double>(detraccion);
+    if (!nullToAbsent || numeroFactura != null) {
+      map['numero_factura'] = Variable<String>(numeroFactura);
+    }
+    if (!nullToAbsent || destinoFlete != null) {
+      map['destino_flete'] = Variable<String>(destinoFlete);
+    }
     if (!nullToAbsent || viajeId != null) {
       map['viaje_id'] = Variable<int>(viajeId);
     }
@@ -2322,6 +2842,13 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       monto: Value(monto),
       fecha: Value(fecha),
       concepto: Value(concepto),
+      detraccion: Value(detraccion),
+      numeroFactura: numeroFactura == null && nullToAbsent
+          ? const Value.absent()
+          : Value(numeroFactura),
+      destinoFlete: destinoFlete == null && nullToAbsent
+          ? const Value.absent()
+          : Value(destinoFlete),
       viajeId: viajeId == null && nullToAbsent
           ? const Value.absent()
           : Value(viajeId),
@@ -2342,7 +2869,12 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       id: serializer.fromJson<int>(json['id']),
       monto: serializer.fromJson<double>(json['monto']),
       fecha: serializer.fromJson<DateTime>(json['fecha']),
-      concepto: serializer.fromJson<String>(json['concepto']),
+      concepto: $IngresosTable.$converterconcepto.fromJson(
+        serializer.fromJson<int>(json['concepto']),
+      ),
+      detraccion: serializer.fromJson<double>(json['detraccion']),
+      numeroFactura: serializer.fromJson<String?>(json['numeroFactura']),
+      destinoFlete: serializer.fromJson<String?>(json['destinoFlete']),
       viajeId: serializer.fromJson<int?>(json['viajeId']),
       comprobantePath: serializer.fromJson<String?>(json['comprobantePath']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -2356,7 +2888,12 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       'id': serializer.toJson<int>(id),
       'monto': serializer.toJson<double>(monto),
       'fecha': serializer.toJson<DateTime>(fecha),
-      'concepto': serializer.toJson<String>(concepto),
+      'concepto': serializer.toJson<int>(
+        $IngresosTable.$converterconcepto.toJson(concepto),
+      ),
+      'detraccion': serializer.toJson<double>(detraccion),
+      'numeroFactura': serializer.toJson<String?>(numeroFactura),
+      'destinoFlete': serializer.toJson<String?>(destinoFlete),
       'viajeId': serializer.toJson<int?>(viajeId),
       'comprobantePath': serializer.toJson<String?>(comprobantePath),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -2368,7 +2905,10 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     int? id,
     double? monto,
     DateTime? fecha,
-    String? concepto,
+    IngresoConcepto? concepto,
+    double? detraccion,
+    Value<String?> numeroFactura = const Value.absent(),
+    Value<String?> destinoFlete = const Value.absent(),
     Value<int?> viajeId = const Value.absent(),
     Value<String?> comprobantePath = const Value.absent(),
     DateTime? createdAt,
@@ -2378,6 +2918,11 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     monto: monto ?? this.monto,
     fecha: fecha ?? this.fecha,
     concepto: concepto ?? this.concepto,
+    detraccion: detraccion ?? this.detraccion,
+    numeroFactura: numeroFactura.present
+        ? numeroFactura.value
+        : this.numeroFactura,
+    destinoFlete: destinoFlete.present ? destinoFlete.value : this.destinoFlete,
     viajeId: viajeId.present ? viajeId.value : this.viajeId,
     comprobantePath: comprobantePath.present
         ? comprobantePath.value
@@ -2391,6 +2936,15 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       monto: data.monto.present ? data.monto.value : this.monto,
       fecha: data.fecha.present ? data.fecha.value : this.fecha,
       concepto: data.concepto.present ? data.concepto.value : this.concepto,
+      detraccion: data.detraccion.present
+          ? data.detraccion.value
+          : this.detraccion,
+      numeroFactura: data.numeroFactura.present
+          ? data.numeroFactura.value
+          : this.numeroFactura,
+      destinoFlete: data.destinoFlete.present
+          ? data.destinoFlete.value
+          : this.destinoFlete,
       viajeId: data.viajeId.present ? data.viajeId.value : this.viajeId,
       comprobantePath: data.comprobantePath.present
           ? data.comprobantePath.value
@@ -2407,6 +2961,9 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
           ..write('monto: $monto, ')
           ..write('fecha: $fecha, ')
           ..write('concepto: $concepto, ')
+          ..write('detraccion: $detraccion, ')
+          ..write('numeroFactura: $numeroFactura, ')
+          ..write('destinoFlete: $destinoFlete, ')
           ..write('viajeId: $viajeId, ')
           ..write('comprobantePath: $comprobantePath, ')
           ..write('createdAt: $createdAt, ')
@@ -2421,6 +2978,9 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     monto,
     fecha,
     concepto,
+    detraccion,
+    numeroFactura,
+    destinoFlete,
     viajeId,
     comprobantePath,
     createdAt,
@@ -2434,6 +2994,9 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
           other.monto == this.monto &&
           other.fecha == this.fecha &&
           other.concepto == this.concepto &&
+          other.detraccion == this.detraccion &&
+          other.numeroFactura == this.numeroFactura &&
+          other.destinoFlete == this.destinoFlete &&
           other.viajeId == this.viajeId &&
           other.comprobantePath == this.comprobantePath &&
           other.createdAt == this.createdAt &&
@@ -2444,7 +3007,10 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
   final Value<int> id;
   final Value<double> monto;
   final Value<DateTime> fecha;
-  final Value<String> concepto;
+  final Value<IngresoConcepto> concepto;
+  final Value<double> detraccion;
+  final Value<String?> numeroFactura;
+  final Value<String?> destinoFlete;
   final Value<int?> viajeId;
   final Value<String?> comprobantePath;
   final Value<DateTime> createdAt;
@@ -2454,6 +3020,9 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     this.monto = const Value.absent(),
     this.fecha = const Value.absent(),
     this.concepto = const Value.absent(),
+    this.detraccion = const Value.absent(),
+    this.numeroFactura = const Value.absent(),
+    this.destinoFlete = const Value.absent(),
     this.viajeId = const Value.absent(),
     this.comprobantePath = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -2463,7 +3032,10 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     this.id = const Value.absent(),
     required double monto,
     required DateTime fecha,
-    required String concepto,
+    required IngresoConcepto concepto,
+    this.detraccion = const Value.absent(),
+    this.numeroFactura = const Value.absent(),
+    this.destinoFlete = const Value.absent(),
     this.viajeId = const Value.absent(),
     this.comprobantePath = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -2475,7 +3047,10 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     Expression<int>? id,
     Expression<double>? monto,
     Expression<DateTime>? fecha,
-    Expression<String>? concepto,
+    Expression<int>? concepto,
+    Expression<double>? detraccion,
+    Expression<String>? numeroFactura,
+    Expression<String>? destinoFlete,
     Expression<int>? viajeId,
     Expression<String>? comprobantePath,
     Expression<DateTime>? createdAt,
@@ -2486,6 +3061,9 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
       if (monto != null) 'monto': monto,
       if (fecha != null) 'fecha': fecha,
       if (concepto != null) 'concepto': concepto,
+      if (detraccion != null) 'detraccion': detraccion,
+      if (numeroFactura != null) 'numero_factura': numeroFactura,
+      if (destinoFlete != null) 'destino_flete': destinoFlete,
       if (viajeId != null) 'viaje_id': viajeId,
       if (comprobantePath != null) 'comprobante_path': comprobantePath,
       if (createdAt != null) 'created_at': createdAt,
@@ -2497,7 +3075,10 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     Value<int>? id,
     Value<double>? monto,
     Value<DateTime>? fecha,
-    Value<String>? concepto,
+    Value<IngresoConcepto>? concepto,
+    Value<double>? detraccion,
+    Value<String?>? numeroFactura,
+    Value<String?>? destinoFlete,
     Value<int?>? viajeId,
     Value<String?>? comprobantePath,
     Value<DateTime>? createdAt,
@@ -2508,6 +3089,9 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
       monto: monto ?? this.monto,
       fecha: fecha ?? this.fecha,
       concepto: concepto ?? this.concepto,
+      detraccion: detraccion ?? this.detraccion,
+      numeroFactura: numeroFactura ?? this.numeroFactura,
+      destinoFlete: destinoFlete ?? this.destinoFlete,
       viajeId: viajeId ?? this.viajeId,
       comprobantePath: comprobantePath ?? this.comprobantePath,
       createdAt: createdAt ?? this.createdAt,
@@ -2528,7 +3112,18 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
       map['fecha'] = Variable<DateTime>(fecha.value);
     }
     if (concepto.present) {
-      map['concepto'] = Variable<String>(concepto.value);
+      map['concepto'] = Variable<int>(
+        $IngresosTable.$converterconcepto.toSql(concepto.value),
+      );
+    }
+    if (detraccion.present) {
+      map['detraccion'] = Variable<double>(detraccion.value);
+    }
+    if (numeroFactura.present) {
+      map['numero_factura'] = Variable<String>(numeroFactura.value);
+    }
+    if (destinoFlete.present) {
+      map['destino_flete'] = Variable<String>(destinoFlete.value);
     }
     if (viajeId.present) {
       map['viaje_id'] = Variable<int>(viajeId.value);
@@ -2552,6 +3147,9 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
           ..write('monto: $monto, ')
           ..write('fecha: $fecha, ')
           ..write('concepto: $concepto, ')
+          ..write('detraccion: $detraccion, ')
+          ..write('numeroFactura: $numeroFactura, ')
+          ..write('destinoFlete: $destinoFlete, ')
           ..write('viajeId: $viajeId, ')
           ..write('comprobantePath: $comprobantePath, ')
           ..write('createdAt: $createdAt, ')
@@ -3789,6 +4387,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TrabajadoresTable trabajadores = $TrabajadoresTable(this);
   late final $VehiculosTable vehiculos = $VehiculosTable(this);
   late final $ViajesTable viajes = $ViajesTable(this);
+  late final $ViajeParadasTable viajeParadas = $ViajeParadasTable(this);
   late final $IngresosTable ingresos = $IngresosTable(this);
   late final $EgresosTable egresos = $EgresosTable(this);
   late final $ImpuestosTable impuestos = $ImpuestosTable(this);
@@ -3800,6 +4399,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     trabajadores,
     vehiculos,
     viajes,
+    viajeParadas,
     ingresos,
     egresos,
     impuestos,
@@ -4086,6 +4686,7 @@ typedef $$VehiculosTableCreateCompanionBuilder =
       Value<String?> marca,
       Value<String?> modelo,
       Value<int?> anio,
+      Value<String?> numeroMtc,
       Value<VehiculoColor?> color,
       Value<DateTime?> soatVencimiento,
       Value<DateTime?> revisionTecnicaVencimiento,
@@ -4101,6 +4702,7 @@ typedef $$VehiculosTableUpdateCompanionBuilder =
       Value<String?> marca,
       Value<String?> modelo,
       Value<int?> anio,
+      Value<String?> numeroMtc,
       Value<VehiculoColor?> color,
       Value<DateTime?> soatVencimiento,
       Value<DateTime?> revisionTecnicaVencimiento,
@@ -4146,6 +4748,11 @@ class $$VehiculosTableFilterComposer
 
   ColumnFilters<int> get anio => $composableBuilder(
     column: $table.anio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get numeroMtc => $composableBuilder(
+    column: $table.numeroMtc,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4221,6 +4828,11 @@ class $$VehiculosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get numeroMtc => $composableBuilder(
+    column: $table.numeroMtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get color => $composableBuilder(
     column: $table.color,
     builder: (column) => ColumnOrderings(column),
@@ -4280,6 +4892,9 @@ class $$VehiculosTableAnnotationComposer
   GeneratedColumn<int> get anio =>
       $composableBuilder(column: $table.anio, builder: (column) => column);
 
+  GeneratedColumn<String> get numeroMtc =>
+      $composableBuilder(column: $table.numeroMtc, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<VehiculoColor?, int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
@@ -4338,6 +4953,7 @@ class $$VehiculosTableTableManager
                 Value<String?> marca = const Value.absent(),
                 Value<String?> modelo = const Value.absent(),
                 Value<int?> anio = const Value.absent(),
+                Value<String?> numeroMtc = const Value.absent(),
                 Value<VehiculoColor?> color = const Value.absent(),
                 Value<DateTime?> soatVencimiento = const Value.absent(),
                 Value<DateTime?> revisionTecnicaVencimiento =
@@ -4352,6 +4968,7 @@ class $$VehiculosTableTableManager
                 marca: marca,
                 modelo: modelo,
                 anio: anio,
+                numeroMtc: numeroMtc,
                 color: color,
                 soatVencimiento: soatVencimiento,
                 revisionTecnicaVencimiento: revisionTecnicaVencimiento,
@@ -4367,6 +4984,7 @@ class $$VehiculosTableTableManager
                 Value<String?> marca = const Value.absent(),
                 Value<String?> modelo = const Value.absent(),
                 Value<int?> anio = const Value.absent(),
+                Value<String?> numeroMtc = const Value.absent(),
                 Value<VehiculoColor?> color = const Value.absent(),
                 Value<DateTime?> soatVencimiento = const Value.absent(),
                 Value<DateTime?> revisionTecnicaVencimiento =
@@ -4381,6 +4999,7 @@ class $$VehiculosTableTableManager
                 marca: marca,
                 modelo: modelo,
                 anio: anio,
+                numeroMtc: numeroMtc,
                 color: color,
                 soatVencimiento: soatVencimiento,
                 revisionTecnicaVencimiento: revisionTecnicaVencimiento,
@@ -4415,8 +5034,8 @@ typedef $$ViajesTableCreateCompanionBuilder =
       Value<int> id,
       required DateTime fechaSalida,
       Value<DateTime?> fechaLlegada,
-      required String origen,
-      required String destino,
+      Value<String> origen,
+      required DestinoPrincipal destinoPrincipal,
       Value<String> cliente,
       Value<String?> carga,
       Value<double?> kilometraje,
@@ -4432,7 +5051,7 @@ typedef $$ViajesTableUpdateCompanionBuilder =
       Value<DateTime> fechaSalida,
       Value<DateTime?> fechaLlegada,
       Value<String> origen,
-      Value<String> destino,
+      Value<DestinoPrincipal> destinoPrincipal,
       Value<String> cliente,
       Value<String?> carga,
       Value<double?> kilometraje,
@@ -4472,9 +5091,10 @@ class $$ViajesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get destino => $composableBuilder(
-    column: $table.destino,
-    builder: (column) => ColumnFilters(column),
+  ColumnWithTypeConverterFilters<DestinoPrincipal, DestinoPrincipal, int>
+  get destinoPrincipal => $composableBuilder(
+    column: $table.destinoPrincipal,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<String> get cliente => $composableBuilder(
@@ -4548,8 +5168,8 @@ class $$ViajesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get destino => $composableBuilder(
-    column: $table.destino,
+  ColumnOrderings<int> get destinoPrincipal => $composableBuilder(
+    column: $table.destinoPrincipal,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4619,8 +5239,11 @@ class $$ViajesTableAnnotationComposer
   GeneratedColumn<String> get origen =>
       $composableBuilder(column: $table.origen, builder: (column) => column);
 
-  GeneratedColumn<String> get destino =>
-      $composableBuilder(column: $table.destino, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<DestinoPrincipal, int>
+  get destinoPrincipal => $composableBuilder(
+    column: $table.destinoPrincipal,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get cliente =>
       $composableBuilder(column: $table.cliente, builder: (column) => column);
@@ -4685,7 +5308,7 @@ class $$ViajesTableTableManager
                 Value<DateTime> fechaSalida = const Value.absent(),
                 Value<DateTime?> fechaLlegada = const Value.absent(),
                 Value<String> origen = const Value.absent(),
-                Value<String> destino = const Value.absent(),
+                Value<DestinoPrincipal> destinoPrincipal = const Value.absent(),
                 Value<String> cliente = const Value.absent(),
                 Value<String?> carga = const Value.absent(),
                 Value<double?> kilometraje = const Value.absent(),
@@ -4699,7 +5322,7 @@ class $$ViajesTableTableManager
                 fechaSalida: fechaSalida,
                 fechaLlegada: fechaLlegada,
                 origen: origen,
-                destino: destino,
+                destinoPrincipal: destinoPrincipal,
                 cliente: cliente,
                 carga: carga,
                 kilometraje: kilometraje,
@@ -4714,8 +5337,8 @@ class $$ViajesTableTableManager
                 Value<int> id = const Value.absent(),
                 required DateTime fechaSalida,
                 Value<DateTime?> fechaLlegada = const Value.absent(),
-                required String origen,
-                required String destino,
+                Value<String> origen = const Value.absent(),
+                required DestinoPrincipal destinoPrincipal,
                 Value<String> cliente = const Value.absent(),
                 Value<String?> carga = const Value.absent(),
                 Value<double?> kilometraje = const Value.absent(),
@@ -4729,7 +5352,7 @@ class $$ViajesTableTableManager
                 fechaSalida: fechaSalida,
                 fechaLlegada: fechaLlegada,
                 origen: origen,
-                destino: destino,
+                destinoPrincipal: destinoPrincipal,
                 cliente: cliente,
                 carga: carga,
                 kilometraje: kilometraje,
@@ -4761,12 +5384,211 @@ typedef $$ViajesTableProcessedTableManager =
       Viaje,
       PrefetchHooks Function()
     >;
+typedef $$ViajeParadasTableCreateCompanionBuilder =
+    ViajeParadasCompanion Function({
+      Value<int> id,
+      required int viajeId,
+      required String provincia,
+      required DateTime fechaSalida,
+      Value<DateTime> createdAt,
+    });
+typedef $$ViajeParadasTableUpdateCompanionBuilder =
+    ViajeParadasCompanion Function({
+      Value<int> id,
+      Value<int> viajeId,
+      Value<String> provincia,
+      Value<DateTime> fechaSalida,
+      Value<DateTime> createdAt,
+    });
+
+class $$ViajeParadasTableFilterComposer
+    extends Composer<_$AppDatabase, $ViajeParadasTable> {
+  $$ViajeParadasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provincia => $composableBuilder(
+    column: $table.provincia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaSalida => $composableBuilder(
+    column: $table.fechaSalida,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ViajeParadasTableOrderingComposer
+    extends Composer<_$AppDatabase, $ViajeParadasTable> {
+  $$ViajeParadasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get viajeId => $composableBuilder(
+    column: $table.viajeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provincia => $composableBuilder(
+    column: $table.provincia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaSalida => $composableBuilder(
+    column: $table.fechaSalida,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ViajeParadasTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ViajeParadasTable> {
+  $$ViajeParadasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get viajeId =>
+      $composableBuilder(column: $table.viajeId, builder: (column) => column);
+
+  GeneratedColumn<String> get provincia =>
+      $composableBuilder(column: $table.provincia, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fechaSalida => $composableBuilder(
+    column: $table.fechaSalida,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$ViajeParadasTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ViajeParadasTable,
+          ViajeParada,
+          $$ViajeParadasTableFilterComposer,
+          $$ViajeParadasTableOrderingComposer,
+          $$ViajeParadasTableAnnotationComposer,
+          $$ViajeParadasTableCreateCompanionBuilder,
+          $$ViajeParadasTableUpdateCompanionBuilder,
+          (
+            ViajeParada,
+            BaseReferences<_$AppDatabase, $ViajeParadasTable, ViajeParada>,
+          ),
+          ViajeParada,
+          PrefetchHooks Function()
+        > {
+  $$ViajeParadasTableTableManager(_$AppDatabase db, $ViajeParadasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ViajeParadasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ViajeParadasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ViajeParadasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> viajeId = const Value.absent(),
+                Value<String> provincia = const Value.absent(),
+                Value<DateTime> fechaSalida = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ViajeParadasCompanion(
+                id: id,
+                viajeId: viajeId,
+                provincia: provincia,
+                fechaSalida: fechaSalida,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int viajeId,
+                required String provincia,
+                required DateTime fechaSalida,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => ViajeParadasCompanion.insert(
+                id: id,
+                viajeId: viajeId,
+                provincia: provincia,
+                fechaSalida: fechaSalida,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ViajeParadasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ViajeParadasTable,
+      ViajeParada,
+      $$ViajeParadasTableFilterComposer,
+      $$ViajeParadasTableOrderingComposer,
+      $$ViajeParadasTableAnnotationComposer,
+      $$ViajeParadasTableCreateCompanionBuilder,
+      $$ViajeParadasTableUpdateCompanionBuilder,
+      (
+        ViajeParada,
+        BaseReferences<_$AppDatabase, $ViajeParadasTable, ViajeParada>,
+      ),
+      ViajeParada,
+      PrefetchHooks Function()
+    >;
 typedef $$IngresosTableCreateCompanionBuilder =
     IngresosCompanion Function({
       Value<int> id,
       required double monto,
       required DateTime fecha,
-      required String concepto,
+      required IngresoConcepto concepto,
+      Value<double> detraccion,
+      Value<String?> numeroFactura,
+      Value<String?> destinoFlete,
       Value<int?> viajeId,
       Value<String?> comprobantePath,
       Value<DateTime> createdAt,
@@ -4777,7 +5599,10 @@ typedef $$IngresosTableUpdateCompanionBuilder =
       Value<int> id,
       Value<double> monto,
       Value<DateTime> fecha,
-      Value<String> concepto,
+      Value<IngresoConcepto> concepto,
+      Value<double> detraccion,
+      Value<String?> numeroFactura,
+      Value<String?> destinoFlete,
       Value<int?> viajeId,
       Value<String?> comprobantePath,
       Value<DateTime> createdAt,
@@ -4808,8 +5633,24 @@ class $$IngresosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get concepto => $composableBuilder(
+  ColumnWithTypeConverterFilters<IngresoConcepto, IngresoConcepto, int>
+  get concepto => $composableBuilder(
     column: $table.concepto,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<double> get detraccion => $composableBuilder(
+    column: $table.detraccion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get numeroFactura => $composableBuilder(
+    column: $table.numeroFactura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get destinoFlete => $composableBuilder(
+    column: $table.destinoFlete,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4858,8 +5699,23 @@ class $$IngresosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get concepto => $composableBuilder(
+  ColumnOrderings<int> get concepto => $composableBuilder(
     column: $table.concepto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get detraccion => $composableBuilder(
+    column: $table.detraccion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get numeroFactura => $composableBuilder(
+    column: $table.numeroFactura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get destinoFlete => $composableBuilder(
+    column: $table.destinoFlete,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4902,8 +5758,23 @@ class $$IngresosTableAnnotationComposer
   GeneratedColumn<DateTime> get fecha =>
       $composableBuilder(column: $table.fecha, builder: (column) => column);
 
-  GeneratedColumn<String> get concepto =>
+  GeneratedColumnWithTypeConverter<IngresoConcepto, int> get concepto =>
       $composableBuilder(column: $table.concepto, builder: (column) => column);
+
+  GeneratedColumn<double> get detraccion => $composableBuilder(
+    column: $table.detraccion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get numeroFactura => $composableBuilder(
+    column: $table.numeroFactura,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get destinoFlete => $composableBuilder(
+    column: $table.destinoFlete,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get viajeId =>
       $composableBuilder(column: $table.viajeId, builder: (column) => column);
@@ -4951,7 +5822,10 @@ class $$IngresosTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<double> monto = const Value.absent(),
                 Value<DateTime> fecha = const Value.absent(),
-                Value<String> concepto = const Value.absent(),
+                Value<IngresoConcepto> concepto = const Value.absent(),
+                Value<double> detraccion = const Value.absent(),
+                Value<String?> numeroFactura = const Value.absent(),
+                Value<String?> destinoFlete = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
                 Value<String?> comprobantePath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -4961,6 +5835,9 @@ class $$IngresosTableTableManager
                 monto: monto,
                 fecha: fecha,
                 concepto: concepto,
+                detraccion: detraccion,
+                numeroFactura: numeroFactura,
+                destinoFlete: destinoFlete,
                 viajeId: viajeId,
                 comprobantePath: comprobantePath,
                 createdAt: createdAt,
@@ -4971,7 +5848,10 @@ class $$IngresosTableTableManager
                 Value<int> id = const Value.absent(),
                 required double monto,
                 required DateTime fecha,
-                required String concepto,
+                required IngresoConcepto concepto,
+                Value<double> detraccion = const Value.absent(),
+                Value<String?> numeroFactura = const Value.absent(),
+                Value<String?> destinoFlete = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
                 Value<String?> comprobantePath = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -4981,6 +5861,9 @@ class $$IngresosTableTableManager
                 monto: monto,
                 fecha: fecha,
                 concepto: concepto,
+                detraccion: detraccion,
+                numeroFactura: numeroFactura,
+                destinoFlete: destinoFlete,
                 viajeId: viajeId,
                 comprobantePath: comprobantePath,
                 createdAt: createdAt,
@@ -5596,6 +6479,8 @@ class $AppDatabaseManager {
       $$VehiculosTableTableManager(_db, _db.vehiculos);
   $$ViajesTableTableManager get viajes =>
       $$ViajesTableTableManager(_db, _db.viajes);
+  $$ViajeParadasTableTableManager get viajeParadas =>
+      $$ViajeParadasTableTableManager(_db, _db.viajeParadas);
   $$IngresosTableTableManager get ingresos =>
       $$IngresosTableTableManager(_db, _db.ingresos);
   $$EgresosTableTableManager get egresos =>

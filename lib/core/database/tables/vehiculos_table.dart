@@ -15,6 +15,9 @@ class Vehiculos extends Table {
   TextColumn get modelo => text().nullable()();
   IntColumn get anio => integer().nullable()();
 
+  /// N.º de inscripción en el Registro Nacional de Transporte (MTC).
+  TextColumn get numeroMtc => text().nullable()();
+
   /// Ayuda a identificar la unidad de un vistazo — opcional porque no
   /// siempre se conoce al registrarla.
   IntColumn get color => intEnum<VehiculoColor>().nullable()();
