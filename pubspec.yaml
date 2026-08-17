@@ -46,6 +46,9 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
 
+  # Foto de boleta/factura (cámara o galería) — Fase 4.
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

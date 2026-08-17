@@ -19,6 +19,11 @@ class Ingresos extends Table {
   RealColumn get detraccion =>
       real().withDefault(const Constant(0))();
 
+  /// Débito fiscal de IGV (18% de un flete) — se acumula como IGV por
+  /// pagar a SUNAT. 0 salvo que [concepto] sea `flete` — ver
+  /// core/finance/igv.dart.
+  RealColumn get igvDebito => real().withDefault(const Constant(0))();
+
   /// Número de factura del flete, para ubicarla físicamente después.
   TextColumn get numeroFactura => text().nullable()();
 
@@ -42,5 +47,6 @@ class Ingresos extends Table {
   List<String> get customConstraints => [
         'CHECK (monto > 0)',
         'CHECK (detraccion >= 0 AND detraccion <= monto)',
+        'CHECK (igv_debito >= 0)',
       ];
 }

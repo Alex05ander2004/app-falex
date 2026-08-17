@@ -38,6 +38,12 @@ final vehiculosActivosProvider = StreamProvider.autoDispose<List<Vehiculo>>((ref
   return ref.watch(vehiculosRepositoryProvider).watchAll(filtro: VehiculoEstado.activo);
 });
 
+/// Todos los vehículos sin importar el estado — para vincular un egreso
+/// (ej. mantenimiento) a una unidad aunque ya no esté activa (Fase 4).
+final vehiculosTodosProvider = StreamProvider.autoDispose<List<Vehiculo>>((ref) {
+  return ref.watch(vehiculosRepositoryProvider).watchAll();
+});
+
 /// Vehículos con SOAT o revisión técnica vencidos o por vencer en los
 /// próximos 30 días — alimenta el aviso en la lista (ver design/stitch:
 /// "Doc. por Vencer").

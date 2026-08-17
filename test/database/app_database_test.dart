@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:falex/core/database/app_database.dart';
 import 'package:falex/core/database/enums.dart';
 import 'package:falex/core/errors/app_exceptions.dart';
+import 'package:falex/features/egresos/data/egresos_repository.dart';
 import 'package:falex/features/ingresos/data/ingresos_repository.dart';
 import 'package:falex/features/trabajadores/data/trabajadores_repository.dart';
 import 'package:falex/features/vehiculos/data/vehiculos_repository.dart';
@@ -269,6 +270,54 @@ void main() {
         .getSingle();
 
     expect(ingreso.detraccion, 0);
+  });
+
+  test('calcula el IGV débito del 18% en un flete', () async {
+    final repo = IngresosRepository(db);
+    final ingresoId = await repo.crear(
+      IngresosCompanion.insert(
+        monto: 2000,
+        fecha: DateTime(2026, 8, 14),
+        concepto: IngresoConcepto.flete,
+      ),
+    );
+
+    final ingreso = await (db.select(db.ingresos)
+          ..where((i) => i.id.equals(ingresoId)))
+        .getSingle();
+
+    expect(ingreso.igvDebito, 360);
+  });
+
+  test('calcula el credito fiscal de IGV solo si el gasto tiene factura con RUC',
+      () async {
+    final repo = EgresosRepository(db);
+
+    final conFacturaId = await repo.crear(
+      EgresosCompanion.insert(
+        monto: 500,
+        fecha: DateTime(2026, 8, 14),
+        categoria: EgresoCategoria.mantenimiento,
+        tieneFacturaConRuc: const Value(true),
+      ),
+    );
+    final sinFacturaId = await repo.crear(
+      EgresosCompanion.insert(
+        monto: 100,
+        fecha: DateTime(2026, 8, 14),
+        categoria: EgresoCategoria.viaticos,
+      ),
+    );
+
+    final conFactura = await (db.select(db.egresos)
+          ..where((e) => e.id.equals(conFacturaId)))
+        .getSingle();
+    final sinFactura = await (db.select(db.egresos)
+          ..where((e) => e.id.equals(sinFacturaId)))
+        .getSingle();
+
+    expect(conFactura.igvCredito, 90);
+    expect(sinFactura.igvCredito, 0);
   });
 
   test('rechaza un egreso con monto <= 0', () async {

@@ -2536,6 +2536,18 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _igvDebitoMeta = const VerificationMeta(
+    'igvDebito',
+  );
+  @override
+  late final GeneratedColumn<double> igvDebito = GeneratedColumn<double>(
+    'igv_debito',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _numeroFacturaMeta = const VerificationMeta(
     'numeroFactura',
   );
@@ -2611,6 +2623,7 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
     fecha,
     concepto,
     detraccion,
+    igvDebito,
     numeroFactura,
     destinoFlete,
     viajeId,
@@ -2653,6 +2666,12 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
       context.handle(
         _detraccionMeta,
         detraccion.isAcceptableOrUnknown(data['detraccion']!, _detraccionMeta),
+      );
+    }
+    if (data.containsKey('igv_debito')) {
+      context.handle(
+        _igvDebitoMeta,
+        igvDebito.isAcceptableOrUnknown(data['igv_debito']!, _igvDebitoMeta),
       );
     }
     if (data.containsKey('numero_factura')) {
@@ -2731,6 +2750,10 @@ class $IngresosTable extends Ingresos with TableInfo<$IngresosTable, Ingreso> {
         DriftSqlType.double,
         data['${effectivePrefix}detraccion'],
       )!,
+      igvDebito: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}igv_debito'],
+      )!,
       numeroFactura: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}numero_factura'],
@@ -2781,6 +2804,11 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
   /// core/finance/detraccion.dart.
   final double detraccion;
 
+  /// Débito fiscal de IGV (18% de un flete) — se acumula como IGV por
+  /// pagar a SUNAT. 0 salvo que [concepto] sea `flete` — ver
+  /// core/finance/igv.dart.
+  final double igvDebito;
+
   /// Número de factura del flete, para ubicarla físicamente después.
   final String? numeroFactura;
 
@@ -2800,6 +2828,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     required this.fecha,
     required this.concepto,
     required this.detraccion,
+    required this.igvDebito,
     this.numeroFactura,
     this.destinoFlete,
     this.viajeId,
@@ -2819,6 +2848,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       );
     }
     map['detraccion'] = Variable<double>(detraccion);
+    map['igv_debito'] = Variable<double>(igvDebito);
     if (!nullToAbsent || numeroFactura != null) {
       map['numero_factura'] = Variable<String>(numeroFactura);
     }
@@ -2843,6 +2873,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       fecha: Value(fecha),
       concepto: Value(concepto),
       detraccion: Value(detraccion),
+      igvDebito: Value(igvDebito),
       numeroFactura: numeroFactura == null && nullToAbsent
           ? const Value.absent()
           : Value(numeroFactura),
@@ -2873,6 +2904,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
         serializer.fromJson<int>(json['concepto']),
       ),
       detraccion: serializer.fromJson<double>(json['detraccion']),
+      igvDebito: serializer.fromJson<double>(json['igvDebito']),
       numeroFactura: serializer.fromJson<String?>(json['numeroFactura']),
       destinoFlete: serializer.fromJson<String?>(json['destinoFlete']),
       viajeId: serializer.fromJson<int?>(json['viajeId']),
@@ -2892,6 +2924,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
         $IngresosTable.$converterconcepto.toJson(concepto),
       ),
       'detraccion': serializer.toJson<double>(detraccion),
+      'igvDebito': serializer.toJson<double>(igvDebito),
       'numeroFactura': serializer.toJson<String?>(numeroFactura),
       'destinoFlete': serializer.toJson<String?>(destinoFlete),
       'viajeId': serializer.toJson<int?>(viajeId),
@@ -2907,6 +2940,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     DateTime? fecha,
     IngresoConcepto? concepto,
     double? detraccion,
+    double? igvDebito,
     Value<String?> numeroFactura = const Value.absent(),
     Value<String?> destinoFlete = const Value.absent(),
     Value<int?> viajeId = const Value.absent(),
@@ -2919,6 +2953,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     fecha: fecha ?? this.fecha,
     concepto: concepto ?? this.concepto,
     detraccion: detraccion ?? this.detraccion,
+    igvDebito: igvDebito ?? this.igvDebito,
     numeroFactura: numeroFactura.present
         ? numeroFactura.value
         : this.numeroFactura,
@@ -2939,6 +2974,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
       detraccion: data.detraccion.present
           ? data.detraccion.value
           : this.detraccion,
+      igvDebito: data.igvDebito.present ? data.igvDebito.value : this.igvDebito,
       numeroFactura: data.numeroFactura.present
           ? data.numeroFactura.value
           : this.numeroFactura,
@@ -2962,6 +2998,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
           ..write('fecha: $fecha, ')
           ..write('concepto: $concepto, ')
           ..write('detraccion: $detraccion, ')
+          ..write('igvDebito: $igvDebito, ')
           ..write('numeroFactura: $numeroFactura, ')
           ..write('destinoFlete: $destinoFlete, ')
           ..write('viajeId: $viajeId, ')
@@ -2979,6 +3016,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
     fecha,
     concepto,
     detraccion,
+    igvDebito,
     numeroFactura,
     destinoFlete,
     viajeId,
@@ -2995,6 +3033,7 @@ class Ingreso extends DataClass implements Insertable<Ingreso> {
           other.fecha == this.fecha &&
           other.concepto == this.concepto &&
           other.detraccion == this.detraccion &&
+          other.igvDebito == this.igvDebito &&
           other.numeroFactura == this.numeroFactura &&
           other.destinoFlete == this.destinoFlete &&
           other.viajeId == this.viajeId &&
@@ -3009,6 +3048,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
   final Value<DateTime> fecha;
   final Value<IngresoConcepto> concepto;
   final Value<double> detraccion;
+  final Value<double> igvDebito;
   final Value<String?> numeroFactura;
   final Value<String?> destinoFlete;
   final Value<int?> viajeId;
@@ -3021,6 +3061,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     this.fecha = const Value.absent(),
     this.concepto = const Value.absent(),
     this.detraccion = const Value.absent(),
+    this.igvDebito = const Value.absent(),
     this.numeroFactura = const Value.absent(),
     this.destinoFlete = const Value.absent(),
     this.viajeId = const Value.absent(),
@@ -3034,6 +3075,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     required DateTime fecha,
     required IngresoConcepto concepto,
     this.detraccion = const Value.absent(),
+    this.igvDebito = const Value.absent(),
     this.numeroFactura = const Value.absent(),
     this.destinoFlete = const Value.absent(),
     this.viajeId = const Value.absent(),
@@ -3049,6 +3091,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     Expression<DateTime>? fecha,
     Expression<int>? concepto,
     Expression<double>? detraccion,
+    Expression<double>? igvDebito,
     Expression<String>? numeroFactura,
     Expression<String>? destinoFlete,
     Expression<int>? viajeId,
@@ -3062,6 +3105,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
       if (fecha != null) 'fecha': fecha,
       if (concepto != null) 'concepto': concepto,
       if (detraccion != null) 'detraccion': detraccion,
+      if (igvDebito != null) 'igv_debito': igvDebito,
       if (numeroFactura != null) 'numero_factura': numeroFactura,
       if (destinoFlete != null) 'destino_flete': destinoFlete,
       if (viajeId != null) 'viaje_id': viajeId,
@@ -3077,6 +3121,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     Value<DateTime>? fecha,
     Value<IngresoConcepto>? concepto,
     Value<double>? detraccion,
+    Value<double>? igvDebito,
     Value<String?>? numeroFactura,
     Value<String?>? destinoFlete,
     Value<int?>? viajeId,
@@ -3090,6 +3135,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
       fecha: fecha ?? this.fecha,
       concepto: concepto ?? this.concepto,
       detraccion: detraccion ?? this.detraccion,
+      igvDebito: igvDebito ?? this.igvDebito,
       numeroFactura: numeroFactura ?? this.numeroFactura,
       destinoFlete: destinoFlete ?? this.destinoFlete,
       viajeId: viajeId ?? this.viajeId,
@@ -3118,6 +3164,9 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
     }
     if (detraccion.present) {
       map['detraccion'] = Variable<double>(detraccion.value);
+    }
+    if (igvDebito.present) {
+      map['igv_debito'] = Variable<double>(igvDebito.value);
     }
     if (numeroFactura.present) {
       map['numero_factura'] = Variable<String>(numeroFactura.value);
@@ -3148,6 +3197,7 @@ class IngresosCompanion extends UpdateCompanion<Ingreso> {
           ..write('fecha: $fecha, ')
           ..write('concepto: $concepto, ')
           ..write('detraccion: $detraccion, ')
+          ..write('igvDebito: $igvDebito, ')
           ..write('numeroFactura: $numeroFactura, ')
           ..write('destinoFlete: $destinoFlete, ')
           ..write('viajeId: $viajeId, ')
@@ -3215,6 +3265,32 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tieneFacturaConRucMeta =
+      const VerificationMeta('tieneFacturaConRuc');
+  @override
+  late final GeneratedColumn<bool> tieneFacturaConRuc = GeneratedColumn<bool>(
+    'tiene_factura_con_ruc',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tiene_factura_con_ruc" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _igvCreditoMeta = const VerificationMeta(
+    'igvCredito',
+  );
+  @override
+  late final GeneratedColumn<double> igvCredito = GeneratedColumn<double>(
+    'igv_credito',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _viajeIdMeta = const VerificationMeta(
     'viajeId',
   );
@@ -3279,6 +3355,8 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
     fecha,
     categoria,
     descripcion,
+    tieneFacturaConRuc,
+    igvCredito,
     viajeId,
     vehiculoId,
     comprobantePath,
@@ -3323,6 +3401,21 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
           data['descripcion']!,
           _descripcionMeta,
         ),
+      );
+    }
+    if (data.containsKey('tiene_factura_con_ruc')) {
+      context.handle(
+        _tieneFacturaConRucMeta,
+        tieneFacturaConRuc.isAcceptableOrUnknown(
+          data['tiene_factura_con_ruc']!,
+          _tieneFacturaConRucMeta,
+        ),
+      );
+    }
+    if (data.containsKey('igv_credito')) {
+      context.handle(
+        _igvCreditoMeta,
+        igvCredito.isAcceptableOrUnknown(data['igv_credito']!, _igvCreditoMeta),
       );
     }
     if (data.containsKey('viaje_id')) {
@@ -3389,6 +3482,14 @@ class $EgresosTable extends Egresos with TableInfo<$EgresosTable, Egreso> {
         DriftSqlType.string,
         data['${effectivePrefix}descripcion'],
       ),
+      tieneFacturaConRuc: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tiene_factura_con_ruc'],
+      )!,
+      igvCredito: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}igv_credito'],
+      )!,
       viajeId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}viaje_id'],
@@ -3427,6 +3528,16 @@ class Egreso extends DataClass implements Insertable<Egreso> {
   final DateTime fecha;
   final EgresoCategoria categoria;
   final String? descripcion;
+
+  /// Si el gasto tiene factura con el RUC de Falex, genera crédito
+  /// fiscal de IGV — un gasto en efectivo sin comprobante válido no
+  /// califica ante SUNAT, así que no lo genera.
+  final bool tieneFacturaConRuc;
+
+  /// Crédito fiscal de IGV (18% del gasto) — reduce el IGV por pagar.
+  /// 0 salvo que [tieneFacturaConRuc] sea verdadero — ver
+  /// core/finance/igv.dart.
+  final double igvCredito;
   final int? viajeId;
   final int? vehiculoId;
   final String? comprobantePath;
@@ -3438,6 +3549,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
     required this.fecha,
     required this.categoria,
     this.descripcion,
+    required this.tieneFacturaConRuc,
+    required this.igvCredito,
     this.viajeId,
     this.vehiculoId,
     this.comprobantePath,
@@ -3458,6 +3571,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
     if (!nullToAbsent || descripcion != null) {
       map['descripcion'] = Variable<String>(descripcion);
     }
+    map['tiene_factura_con_ruc'] = Variable<bool>(tieneFacturaConRuc);
+    map['igv_credito'] = Variable<double>(igvCredito);
     if (!nullToAbsent || viajeId != null) {
       map['viaje_id'] = Variable<int>(viajeId);
     }
@@ -3481,6 +3596,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
       descripcion: descripcion == null && nullToAbsent
           ? const Value.absent()
           : Value(descripcion),
+      tieneFacturaConRuc: Value(tieneFacturaConRuc),
+      igvCredito: Value(igvCredito),
       viajeId: viajeId == null && nullToAbsent
           ? const Value.absent()
           : Value(viajeId),
@@ -3508,6 +3625,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
         serializer.fromJson<int>(json['categoria']),
       ),
       descripcion: serializer.fromJson<String?>(json['descripcion']),
+      tieneFacturaConRuc: serializer.fromJson<bool>(json['tieneFacturaConRuc']),
+      igvCredito: serializer.fromJson<double>(json['igvCredito']),
       viajeId: serializer.fromJson<int?>(json['viajeId']),
       vehiculoId: serializer.fromJson<int?>(json['vehiculoId']),
       comprobantePath: serializer.fromJson<String?>(json['comprobantePath']),
@@ -3526,6 +3645,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
         $EgresosTable.$convertercategoria.toJson(categoria),
       ),
       'descripcion': serializer.toJson<String?>(descripcion),
+      'tieneFacturaConRuc': serializer.toJson<bool>(tieneFacturaConRuc),
+      'igvCredito': serializer.toJson<double>(igvCredito),
       'viajeId': serializer.toJson<int?>(viajeId),
       'vehiculoId': serializer.toJson<int?>(vehiculoId),
       'comprobantePath': serializer.toJson<String?>(comprobantePath),
@@ -3540,6 +3661,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
     DateTime? fecha,
     EgresoCategoria? categoria,
     Value<String?> descripcion = const Value.absent(),
+    bool? tieneFacturaConRuc,
+    double? igvCredito,
     Value<int?> viajeId = const Value.absent(),
     Value<int?> vehiculoId = const Value.absent(),
     Value<String?> comprobantePath = const Value.absent(),
@@ -3551,6 +3674,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
     fecha: fecha ?? this.fecha,
     categoria: categoria ?? this.categoria,
     descripcion: descripcion.present ? descripcion.value : this.descripcion,
+    tieneFacturaConRuc: tieneFacturaConRuc ?? this.tieneFacturaConRuc,
+    igvCredito: igvCredito ?? this.igvCredito,
     viajeId: viajeId.present ? viajeId.value : this.viajeId,
     vehiculoId: vehiculoId.present ? vehiculoId.value : this.vehiculoId,
     comprobantePath: comprobantePath.present
@@ -3568,6 +3693,12 @@ class Egreso extends DataClass implements Insertable<Egreso> {
       descripcion: data.descripcion.present
           ? data.descripcion.value
           : this.descripcion,
+      tieneFacturaConRuc: data.tieneFacturaConRuc.present
+          ? data.tieneFacturaConRuc.value
+          : this.tieneFacturaConRuc,
+      igvCredito: data.igvCredito.present
+          ? data.igvCredito.value
+          : this.igvCredito,
       viajeId: data.viajeId.present ? data.viajeId.value : this.viajeId,
       vehiculoId: data.vehiculoId.present
           ? data.vehiculoId.value
@@ -3588,6 +3719,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
           ..write('fecha: $fecha, ')
           ..write('categoria: $categoria, ')
           ..write('descripcion: $descripcion, ')
+          ..write('tieneFacturaConRuc: $tieneFacturaConRuc, ')
+          ..write('igvCredito: $igvCredito, ')
           ..write('viajeId: $viajeId, ')
           ..write('vehiculoId: $vehiculoId, ')
           ..write('comprobantePath: $comprobantePath, ')
@@ -3604,6 +3737,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
     fecha,
     categoria,
     descripcion,
+    tieneFacturaConRuc,
+    igvCredito,
     viajeId,
     vehiculoId,
     comprobantePath,
@@ -3619,6 +3754,8 @@ class Egreso extends DataClass implements Insertable<Egreso> {
           other.fecha == this.fecha &&
           other.categoria == this.categoria &&
           other.descripcion == this.descripcion &&
+          other.tieneFacturaConRuc == this.tieneFacturaConRuc &&
+          other.igvCredito == this.igvCredito &&
           other.viajeId == this.viajeId &&
           other.vehiculoId == this.vehiculoId &&
           other.comprobantePath == this.comprobantePath &&
@@ -3632,6 +3769,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
   final Value<DateTime> fecha;
   final Value<EgresoCategoria> categoria;
   final Value<String?> descripcion;
+  final Value<bool> tieneFacturaConRuc;
+  final Value<double> igvCredito;
   final Value<int?> viajeId;
   final Value<int?> vehiculoId;
   final Value<String?> comprobantePath;
@@ -3643,6 +3782,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
     this.fecha = const Value.absent(),
     this.categoria = const Value.absent(),
     this.descripcion = const Value.absent(),
+    this.tieneFacturaConRuc = const Value.absent(),
+    this.igvCredito = const Value.absent(),
     this.viajeId = const Value.absent(),
     this.vehiculoId = const Value.absent(),
     this.comprobantePath = const Value.absent(),
@@ -3655,6 +3796,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
     required DateTime fecha,
     required EgresoCategoria categoria,
     this.descripcion = const Value.absent(),
+    this.tieneFacturaConRuc = const Value.absent(),
+    this.igvCredito = const Value.absent(),
     this.viajeId = const Value.absent(),
     this.vehiculoId = const Value.absent(),
     this.comprobantePath = const Value.absent(),
@@ -3669,6 +3812,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
     Expression<DateTime>? fecha,
     Expression<int>? categoria,
     Expression<String>? descripcion,
+    Expression<bool>? tieneFacturaConRuc,
+    Expression<double>? igvCredito,
     Expression<int>? viajeId,
     Expression<int>? vehiculoId,
     Expression<String>? comprobantePath,
@@ -3681,6 +3826,9 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
       if (fecha != null) 'fecha': fecha,
       if (categoria != null) 'categoria': categoria,
       if (descripcion != null) 'descripcion': descripcion,
+      if (tieneFacturaConRuc != null)
+        'tiene_factura_con_ruc': tieneFacturaConRuc,
+      if (igvCredito != null) 'igv_credito': igvCredito,
       if (viajeId != null) 'viaje_id': viajeId,
       if (vehiculoId != null) 'vehiculo_id': vehiculoId,
       if (comprobantePath != null) 'comprobante_path': comprobantePath,
@@ -3695,6 +3843,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
     Value<DateTime>? fecha,
     Value<EgresoCategoria>? categoria,
     Value<String?>? descripcion,
+    Value<bool>? tieneFacturaConRuc,
+    Value<double>? igvCredito,
     Value<int?>? viajeId,
     Value<int?>? vehiculoId,
     Value<String?>? comprobantePath,
@@ -3707,6 +3857,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
       fecha: fecha ?? this.fecha,
       categoria: categoria ?? this.categoria,
       descripcion: descripcion ?? this.descripcion,
+      tieneFacturaConRuc: tieneFacturaConRuc ?? this.tieneFacturaConRuc,
+      igvCredito: igvCredito ?? this.igvCredito,
       viajeId: viajeId ?? this.viajeId,
       vehiculoId: vehiculoId ?? this.vehiculoId,
       comprobantePath: comprobantePath ?? this.comprobantePath,
@@ -3735,6 +3887,12 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
     if (descripcion.present) {
       map['descripcion'] = Variable<String>(descripcion.value);
     }
+    if (tieneFacturaConRuc.present) {
+      map['tiene_factura_con_ruc'] = Variable<bool>(tieneFacturaConRuc.value);
+    }
+    if (igvCredito.present) {
+      map['igv_credito'] = Variable<double>(igvCredito.value);
+    }
     if (viajeId.present) {
       map['viaje_id'] = Variable<int>(viajeId.value);
     }
@@ -3761,6 +3919,8 @@ class EgresosCompanion extends UpdateCompanion<Egreso> {
           ..write('fecha: $fecha, ')
           ..write('categoria: $categoria, ')
           ..write('descripcion: $descripcion, ')
+          ..write('tieneFacturaConRuc: $tieneFacturaConRuc, ')
+          ..write('igvCredito: $igvCredito, ')
           ..write('viajeId: $viajeId, ')
           ..write('vehiculoId: $vehiculoId, ')
           ..write('comprobantePath: $comprobantePath, ')
@@ -5587,6 +5747,7 @@ typedef $$IngresosTableCreateCompanionBuilder =
       required DateTime fecha,
       required IngresoConcepto concepto,
       Value<double> detraccion,
+      Value<double> igvDebito,
       Value<String?> numeroFactura,
       Value<String?> destinoFlete,
       Value<int?> viajeId,
@@ -5601,6 +5762,7 @@ typedef $$IngresosTableUpdateCompanionBuilder =
       Value<DateTime> fecha,
       Value<IngresoConcepto> concepto,
       Value<double> detraccion,
+      Value<double> igvDebito,
       Value<String?> numeroFactura,
       Value<String?> destinoFlete,
       Value<int?> viajeId,
@@ -5641,6 +5803,11 @@ class $$IngresosTableFilterComposer
 
   ColumnFilters<double> get detraccion => $composableBuilder(
     column: $table.detraccion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get igvDebito => $composableBuilder(
+    column: $table.igvDebito,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5709,6 +5876,11 @@ class $$IngresosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get igvDebito => $composableBuilder(
+    column: $table.igvDebito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get numeroFactura => $composableBuilder(
     column: $table.numeroFactura,
     builder: (column) => ColumnOrderings(column),
@@ -5765,6 +5937,9 @@ class $$IngresosTableAnnotationComposer
     column: $table.detraccion,
     builder: (column) => column,
   );
+
+  GeneratedColumn<double> get igvDebito =>
+      $composableBuilder(column: $table.igvDebito, builder: (column) => column);
 
   GeneratedColumn<String> get numeroFactura => $composableBuilder(
     column: $table.numeroFactura,
@@ -5824,6 +5999,7 @@ class $$IngresosTableTableManager
                 Value<DateTime> fecha = const Value.absent(),
                 Value<IngresoConcepto> concepto = const Value.absent(),
                 Value<double> detraccion = const Value.absent(),
+                Value<double> igvDebito = const Value.absent(),
                 Value<String?> numeroFactura = const Value.absent(),
                 Value<String?> destinoFlete = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
@@ -5836,6 +6012,7 @@ class $$IngresosTableTableManager
                 fecha: fecha,
                 concepto: concepto,
                 detraccion: detraccion,
+                igvDebito: igvDebito,
                 numeroFactura: numeroFactura,
                 destinoFlete: destinoFlete,
                 viajeId: viajeId,
@@ -5850,6 +6027,7 @@ class $$IngresosTableTableManager
                 required DateTime fecha,
                 required IngresoConcepto concepto,
                 Value<double> detraccion = const Value.absent(),
+                Value<double> igvDebito = const Value.absent(),
                 Value<String?> numeroFactura = const Value.absent(),
                 Value<String?> destinoFlete = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
@@ -5862,6 +6040,7 @@ class $$IngresosTableTableManager
                 fecha: fecha,
                 concepto: concepto,
                 detraccion: detraccion,
+                igvDebito: igvDebito,
                 numeroFactura: numeroFactura,
                 destinoFlete: destinoFlete,
                 viajeId: viajeId,
@@ -5898,6 +6077,8 @@ typedef $$EgresosTableCreateCompanionBuilder =
       required DateTime fecha,
       required EgresoCategoria categoria,
       Value<String?> descripcion,
+      Value<bool> tieneFacturaConRuc,
+      Value<double> igvCredito,
       Value<int?> viajeId,
       Value<int?> vehiculoId,
       Value<String?> comprobantePath,
@@ -5911,6 +6092,8 @@ typedef $$EgresosTableUpdateCompanionBuilder =
       Value<DateTime> fecha,
       Value<EgresoCategoria> categoria,
       Value<String?> descripcion,
+      Value<bool> tieneFacturaConRuc,
+      Value<double> igvCredito,
       Value<int?> viajeId,
       Value<int?> vehiculoId,
       Value<String?> comprobantePath,
@@ -5950,6 +6133,16 @@ class $$EgresosTableFilterComposer
 
   ColumnFilters<String> get descripcion => $composableBuilder(
     column: $table.descripcion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tieneFacturaConRuc => $composableBuilder(
+    column: $table.tieneFacturaConRuc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get igvCredito => $composableBuilder(
+    column: $table.igvCredito,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6013,6 +6206,16 @@ class $$EgresosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get tieneFacturaConRuc => $composableBuilder(
+    column: $table.tieneFacturaConRuc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get igvCredito => $composableBuilder(
+    column: $table.igvCredito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get viajeId => $composableBuilder(
     column: $table.viajeId,
     builder: (column) => ColumnOrderings(column),
@@ -6062,6 +6265,16 @@ class $$EgresosTableAnnotationComposer
 
   GeneratedColumn<String> get descripcion => $composableBuilder(
     column: $table.descripcion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tieneFacturaConRuc => $composableBuilder(
+    column: $table.tieneFacturaConRuc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get igvCredito => $composableBuilder(
+    column: $table.igvCredito,
     builder: (column) => column,
   );
 
@@ -6118,6 +6331,8 @@ class $$EgresosTableTableManager
                 Value<DateTime> fecha = const Value.absent(),
                 Value<EgresoCategoria> categoria = const Value.absent(),
                 Value<String?> descripcion = const Value.absent(),
+                Value<bool> tieneFacturaConRuc = const Value.absent(),
+                Value<double> igvCredito = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
                 Value<int?> vehiculoId = const Value.absent(),
                 Value<String?> comprobantePath = const Value.absent(),
@@ -6129,6 +6344,8 @@ class $$EgresosTableTableManager
                 fecha: fecha,
                 categoria: categoria,
                 descripcion: descripcion,
+                tieneFacturaConRuc: tieneFacturaConRuc,
+                igvCredito: igvCredito,
                 viajeId: viajeId,
                 vehiculoId: vehiculoId,
                 comprobantePath: comprobantePath,
@@ -6142,6 +6359,8 @@ class $$EgresosTableTableManager
                 required DateTime fecha,
                 required EgresoCategoria categoria,
                 Value<String?> descripcion = const Value.absent(),
+                Value<bool> tieneFacturaConRuc = const Value.absent(),
+                Value<double> igvCredito = const Value.absent(),
                 Value<int?> viajeId = const Value.absent(),
                 Value<int?> vehiculoId = const Value.absent(),
                 Value<String?> comprobantePath = const Value.absent(),
@@ -6153,6 +6372,8 @@ class $$EgresosTableTableManager
                 fecha: fecha,
                 categoria: categoria,
                 descripcion: descripcion,
+                tieneFacturaConRuc: tieneFacturaConRuc,
+                igvCredito: igvCredito,
                 viajeId: viajeId,
                 vehiculoId: vehiculoId,
                 comprobantePath: comprobantePath,

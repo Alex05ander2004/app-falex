@@ -7,14 +7,14 @@ import '../../../core/database/database_provider.dart';
 import '../../../core/database/enums.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../../../core/finance/detraccion.dart';
+import '../../../core/finance/igv.dart';
 
 final ingresosRepositoryProvider = Provider<IngresosRepository>(
   (ref) => IngresosRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Fletes cobrados a KR y otros ingresos. En la Fase 3 solo se usa desde
-/// el detalle de un viaje; la pantalla de ingresos generales (ligados o
-/// no a un viaje) llega en la Fase 4.
+/// Fletes cobrados a KR y otros ingresos — ligados o no a un viaje
+/// puntual (Fase 4).
 class IngresosRepository {
   IngresosRepository(this._db);
   final AppDatabase _db;
@@ -26,16 +26,31 @@ class IngresosRepository {
         .watch();
   }
 
-  /// La detracción no la elige quien registra el ingreso — se calcula
-  /// acá, siempre, para que nadie pueda registrar un flete sin ella por
-  /// olvido (ver core/finance/detraccion.dart).
+  /// Todos los ingresos, ligados o no a un viaje — para la sección de
+  /// Finanzas.
+  Stream<List<Ingreso>> watchAll() {
+    return (_db.select(_db.ingresos)
+          ..orderBy([(i) => OrderingTerm.desc(i.fecha)]))
+        .watch();
+  }
+
+  /// La detracción y el IGV de débito no los elige quien registra el
+  /// ingreso — se calculan acá, siempre, para que nadie olvide
+  /// registrar un flete sin ellos (ver core/finance/detraccion.dart y
+  /// core/finance/igv.dart).
   Future<int> crear(IngresosCompanion data) async {
-    final esFlete = data.concepto.value == IngresoConcepto.flete;
-    final dataConDetraccion = data.copyWith(
-      detraccion: Value(esFlete ? calcularDetraccion(data.monto.value) : 0),
-    );
     try {
-      return await _db.into(_db.ingresos).insert(dataConDetraccion);
+      return await _db.into(_db.ingresos).insert(_conCalculosFiscales(data));
+    } on SqliteException catch (e) {
+      throw _traducirError(e);
+    }
+  }
+
+  Future<void> actualizar(int id, IngresosCompanion data) async {
+    try {
+      await (_db.update(_db.ingresos)..where((i) => i.id.equals(id))).write(
+        _conCalculosFiscales(data).copyWith(updatedAt: Value(DateTime.now())),
+      );
     } on SqliteException catch (e) {
       throw _traducirError(e);
     }
@@ -43,6 +58,15 @@ class IngresosRepository {
 
   Future<void> eliminar(int id) =>
       (_db.delete(_db.ingresos)..where((i) => i.id.equals(id))).go();
+
+  IngresosCompanion _conCalculosFiscales(IngresosCompanion data) {
+    if (!data.concepto.present || !data.monto.present) return data;
+    final esFlete = data.concepto.value == IngresoConcepto.flete;
+    return data.copyWith(
+      detraccion: Value(esFlete ? calcularDetraccion(data.monto.value) : 0),
+      igvDebito: Value(esFlete ? calcularIgv(data.monto.value) : 0),
+    );
+  }
 
   Exception _traducirError(SqliteException e) {
     if (e.message.contains('CHECK')) {

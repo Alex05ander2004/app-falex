@@ -5,14 +5,14 @@ import 'package:sqlite3/sqlite3.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/errors/app_exceptions.dart';
+import '../../../core/finance/igv.dart';
 
 final egresosRepositoryProvider = Provider<EgresosRepository>(
   (ref) => EgresosRepository(ref.watch(appDatabaseProvider)),
 );
 
-/// Combustible, peajes, viáticos, mantenimiento, multas y otros. En la
-/// Fase 3 solo se usa desde el detalle de un viaje ("registro rápido de
-/// gasto"); la pantalla de egresos generales llega en la Fase 4.
+/// Combustible, peajes, viáticos, mantenimiento, multas y otros — ligados
+/// o no a un viaje, y opcionalmente a un vehículo (Fase 4).
 class EgresosRepository {
   EgresosRepository(this._db);
   final AppDatabase _db;
@@ -24,9 +24,30 @@ class EgresosRepository {
         .watch();
   }
 
+  /// Todos los egresos, ligados o no a un viaje — para la sección de
+  /// Finanzas.
+  Stream<List<Egreso>> watchAll() {
+    return (_db.select(_db.egresos)
+          ..orderBy([(e) => OrderingTerm.desc(e.fecha)]))
+        .watch();
+  }
+
+  /// El crédito fiscal no lo elige quien registra el gasto — se calcula
+  /// acá según [EgresosCompanion.tieneFacturaConRuc] (ver
+  /// core/finance/igv.dart).
   Future<int> crear(EgresosCompanion data) async {
     try {
-      return await _db.into(_db.egresos).insert(data);
+      return await _db.into(_db.egresos).insert(_conCalculosFiscales(data));
+    } on SqliteException catch (e) {
+      throw _traducirError(e);
+    }
+  }
+
+  Future<void> actualizar(int id, EgresosCompanion data) async {
+    try {
+      await (_db.update(_db.egresos)..where((e) => e.id.equals(id))).write(
+        _conCalculosFiscales(data).copyWith(updatedAt: Value(DateTime.now())),
+      );
     } on SqliteException catch (e) {
       throw _traducirError(e);
     }
@@ -34,6 +55,16 @@ class EgresosRepository {
 
   Future<void> eliminar(int id) =>
       (_db.delete(_db.egresos)..where((e) => e.id.equals(id))).go();
+
+  EgresosCompanion _conCalculosFiscales(EgresosCompanion data) {
+    if (!data.monto.present) return data;
+    final tieneFactura = data.tieneFacturaConRuc.present
+        ? data.tieneFacturaConRuc.value
+        : false;
+    return data.copyWith(
+      igvCredito: Value(tieneFactura ? calcularIgv(data.monto.value) : 0),
+    );
+  }
 
   Exception _traducirError(SqliteException e) {
     if (e.message.contains('CHECK')) {

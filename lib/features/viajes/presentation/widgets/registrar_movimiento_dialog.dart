@@ -8,6 +8,7 @@ import '../../../../core/database/enum_labels.dart';
 import '../../../../core/database/enums.dart';
 import '../../../../core/errors/app_exceptions.dart';
 import '../../../../core/finance/detraccion.dart';
+import '../../../../core/finance/igv.dart';
 import '../../../egresos/data/egresos_repository.dart';
 import '../../../ingresos/data/ingresos_repository.dart';
 import '../../application/viaje_detalle_providers.dart';
@@ -34,10 +35,12 @@ class _RegistrarIngresoDialog extends ConsumerStatefulWidget {
   final int viajeId;
 
   @override
-  ConsumerState<_RegistrarIngresoDialog> createState() => _RegistrarIngresoDialogState();
+  ConsumerState<_RegistrarIngresoDialog> createState() =>
+      _RegistrarIngresoDialogState();
 }
 
-class _RegistrarIngresoDialogState extends ConsumerState<_RegistrarIngresoDialog> {
+class _RegistrarIngresoDialogState
+    extends ConsumerState<_RegistrarIngresoDialog> {
   final _formKey = GlobalKey<FormState>();
   final _montoCtrl = TextEditingController();
   final _facturaCtrl = TextEditingController();
@@ -95,13 +98,17 @@ class _RegistrarIngresoDialogState extends ConsumerState<_RegistrarIngresoDialog
         ? (_destinoFlete ?? (opciones.isNotEmpty ? opciones.first : null))
         : null;
     try {
-      await ref.read(ingresosRepositoryProvider).crear(
+      await ref
+          .read(ingresosRepositoryProvider)
+          .crear(
             IngresosCompanion.insert(
               monto: double.parse(_montoCtrl.text.trim()),
               fecha: DateTime.now(),
               concepto: _concepto,
               numeroFactura: Value(
-                _facturaCtrl.text.trim().isEmpty ? null : _facturaCtrl.text.trim(),
+                _facturaCtrl.text.trim().isEmpty
+                    ? null
+                    : _facturaCtrl.text.trim(),
               ),
               destinoFlete: Value(destino),
               viajeId: Value(widget.viajeId),
@@ -123,64 +130,87 @@ class _RegistrarIngresoDialogState extends ConsumerState<_RegistrarIngresoDialog
     final opcionesDestino = _opcionesDestino(ref, watch: true);
     final destinoSeleccionado =
         (_destinoFlete != null && opcionesDestino.contains(_destinoFlete))
-            ? _destinoFlete
-            : (opcionesDestino.isNotEmpty ? opcionesDestino.first : null);
+        ? _destinoFlete
+        : (opcionesDestino.isNotEmpty ? opcionesDestino.first : null);
 
     return AlertDialog(
       title: const Text('Nuevo ingreso'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<IngresoConcepto>(
-              initialValue: _concepto,
-              decoration: const InputDecoration(labelText: 'Concepto'),
-              items: IngresoConcepto.values
-                  .map((c) => DropdownMenuItem(
+      // Scrollable: con el teclado abierto y todos los campos (concepto,
+      // destino, detracción, IGV, factura), el contenido no siempre
+      // entra en la altura disponible del diálogo.
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<IngresoConcepto>(
+                initialValue: _concepto,
+                decoration: const InputDecoration(labelText: 'Concepto'),
+                items: IngresoConcepto.values
+                    .map(
+                      (c) => DropdownMenuItem(
                         value: c,
                         child: Text(etiquetaIngresoConcepto(c)),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _concepto = v ?? _concepto),
-            ),
-            if (esFlete && opcionesDestino.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: destinoSeleccionado,
-                decoration: const InputDecoration(labelText: 'Destino del flete'),
-                items: opcionesDestino
-                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                      ),
+                    )
                     .toList(),
-                onChanged: (v) => setState(() => _destinoFlete = v),
+                onChanged: (v) => setState(() => _concepto = v ?? _concepto),
               ),
-            ],
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _montoCtrl,
-              decoration: const InputDecoration(labelText: 'Monto (S/)'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-              validator: _validarMonto,
-            ),
-            if (esFlete && montoIngresado != null && montoIngresado > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Detracción (4%): S/ ${calcularDetraccion(montoIngresado).toStringAsFixed(2)} · '
-                'Recibes S/ ${(montoIngresado - calcularDetraccion(montoIngresado)).toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.bodySmall,
+              if (esFlete && opcionesDestino.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: destinoSeleccionado,
+                  decoration: const InputDecoration(
+                    labelText: 'Destino del flete',
+                  ),
+                  items: opcionesDestino
+                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _destinoFlete = v),
+                ),
+              ],
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _montoCtrl,
+                decoration: const InputDecoration(labelText: 'Monto (S/)'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                validator: _validarMonto,
               ),
+              if (esFlete && montoIngresado != null && montoIngresado > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Detracción (4%): S/ ${calcularDetraccion(montoIngresado).toStringAsFixed(2)} · '
+                  'Recibes S/ ${(montoIngresado - calcularDetraccion(montoIngresado)).toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(
+                  'IGV débito (18%, se acumula como impuesto por pagar): '
+                  'S/ ${calcularIgv(montoIngresado).toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _facturaCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'N.º de factura (opcional)',
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
             ],
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _facturaCtrl,
-              decoration: const InputDecoration(labelText: 'N.º de factura (opcional)'),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            ],
-          ],
+          ),
         ),
       ),
       actions: [
@@ -202,16 +232,25 @@ class _RegistrarEgresoDialog extends ConsumerStatefulWidget {
   final int viajeId;
 
   @override
-  ConsumerState<_RegistrarEgresoDialog> createState() => _RegistrarEgresoDialogState();
+  ConsumerState<_RegistrarEgresoDialog> createState() =>
+      _RegistrarEgresoDialogState();
 }
 
-class _RegistrarEgresoDialogState extends ConsumerState<_RegistrarEgresoDialog> {
+class _RegistrarEgresoDialogState
+    extends ConsumerState<_RegistrarEgresoDialog> {
   final _formKey = GlobalKey<FormState>();
   final _montoCtrl = TextEditingController();
   final _descripcionCtrl = TextEditingController();
   EgresoCategoria _categoria = EgresoCategoria.combustible;
+  bool _tieneFacturaConRuc = false;
   bool _guardando = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _montoCtrl.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -227,14 +266,19 @@ class _RegistrarEgresoDialogState extends ConsumerState<_RegistrarEgresoDialog> 
       _error = null;
     });
     try {
-      await ref.read(egresosRepositoryProvider).crear(
+      await ref
+          .read(egresosRepositoryProvider)
+          .crear(
             EgresosCompanion.insert(
               monto: double.parse(_montoCtrl.text.trim()),
               fecha: DateTime.now(),
               categoria: _categoria,
               descripcion: Value(
-                _descripcionCtrl.text.trim().isEmpty ? null : _descripcionCtrl.text.trim(),
+                _descripcionCtrl.text.trim().isEmpty
+                    ? null
+                    : _descripcionCtrl.text.trim(),
               ),
+              tieneFacturaConRuc: Value(_tieneFacturaConRuc),
               viajeId: Value(widget.viajeId),
             ),
           );
@@ -257,42 +301,73 @@ class _RegistrarEgresoDialogState extends ConsumerState<_RegistrarEgresoDialog> 
 
   @override
   Widget build(BuildContext context) {
+    final montoIngresado = double.tryParse(_montoCtrl.text.trim());
+
     return AlertDialog(
       title: const Text('Nuevo gasto'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _montoCtrl,
-              decoration: const InputDecoration(labelText: 'Monto (S/)'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-              validator: _validarMonto,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<EgresoCategoria>(
-              initialValue: _categoria,
-              decoration: const InputDecoration(labelText: 'Categoría'),
-              items: EgresoCategoria.values
-                  .map((c) => DropdownMenuItem(
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _montoCtrl,
+                decoration: const InputDecoration(labelText: 'Monto (S/)'),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                validator: _validarMonto,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<EgresoCategoria>(
+                initialValue: _categoria,
+                decoration: const InputDecoration(labelText: 'Categoría'),
+                items: EgresoCategoria.values
+                    .map(
+                      (c) => DropdownMenuItem(
                         value: c,
                         child: Text(etiquetaEgresoCategoria(c)),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _categoria = v ?? _categoria),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _descripcionCtrl,
-              decoration: const InputDecoration(labelText: 'Descripción (opcional)'),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 8),
-              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => _categoria = v ?? _categoria),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descripcionCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción (opcional)',
+                ),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _tieneFacturaConRuc,
+                title: const Text('Tiene factura con RUC de Falex'),
+                onChanged: (v) =>
+                    setState(() => _tieneFacturaConRuc = v ?? false),
+              ),
+              if (_tieneFacturaConRuc &&
+                  montoIngresado != null &&
+                  montoIngresado > 0)
+                Text(
+                  'Crédito fiscal (18%, reduce el IGV por pagar): '
+                  'S/ ${calcularIgv(montoIngresado).toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              if (_error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actions: [

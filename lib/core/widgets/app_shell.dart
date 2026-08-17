@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../features/finanzas/presentation/finanzas_screen.dart';
 import '../../features/trabajadores/presentation/trabajadores_list_screen.dart';
 import '../../features/vehiculos/presentation/vehiculos_list_screen.dart';
 import '../../features/viajes/presentation/viajes_list_screen.dart';
-import 'coming_soon_tab.dart';
 
 /// Navegación principal — 4 pestañas, igual que el borrador de Stitch
-/// (Finance / Trips / Fleet / Workers). Finanzas sigue como placeholder
-/// hasta la Fase 6.
+/// (Finance / Trips / Fleet / Workers).
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -19,7 +18,7 @@ class _AppShellState extends State<AppShell> {
   int _index = 1;
 
   static const _tabs = [
-    ComingSoonTab(titulo: 'Finanzas', fase: 'Fase 6 (Dashboard, filtros y reportes)'),
+    FinanzasScreen(),
     ViajesListScreen(),
     VehiculosListScreen(),
     TrabajadoresListScreen(),

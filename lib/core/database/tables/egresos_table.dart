@@ -15,6 +15,17 @@ class Egresos extends Table {
   IntColumn get categoria => intEnum<EgresoCategoria>()();
   TextColumn get descripcion => text().nullable()();
 
+  /// Si el gasto tiene factura con el RUC de Falex, genera crédito
+  /// fiscal de IGV — un gasto en efectivo sin comprobante válido no
+  /// califica ante SUNAT, así que no lo genera.
+  BoolColumn get tieneFacturaConRuc =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Crédito fiscal de IGV (18% del gasto) — reduce el IGV por pagar.
+  /// 0 salvo que [tieneFacturaConRuc] sea verdadero — ver
+  /// core/finance/igv.dart.
+  RealColumn get igvCredito => real().withDefault(const Constant(0))();
+
   IntColumn get viajeId =>
       integer().nullable().references(Viajes, #id)();
   IntColumn get vehiculoId =>
@@ -28,5 +39,8 @@ class Egresos extends Table {
       dateTime().withDefault(currentDateAndTime)();
 
   @override
-  List<String> get customConstraints => ['CHECK (monto > 0)'];
+  List<String> get customConstraints => [
+        'CHECK (monto > 0)',
+        'CHECK (igv_credito >= 0)',
+      ];
 }

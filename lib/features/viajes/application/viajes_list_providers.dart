@@ -14,3 +14,10 @@ final viajesListadoProvider =
       .watch(viajesRepositoryProvider)
       .watchAllConDetalle(filtroEstado: filtro);
 });
+
+/// Todos los viajes, sin depender del filtro mutable de la pantalla de
+/// lista — para selectores como el de vincular un ingreso/egreso general
+/// a un viaje (Fase 4).
+final viajesTodosProvider = StreamProvider.autoDispose<List<ViajeConDetalle>>((ref) {
+  return ref.watch(viajesRepositoryProvider).watchAllConDetalle();
+});
