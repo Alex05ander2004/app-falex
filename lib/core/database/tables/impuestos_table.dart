@@ -7,7 +7,7 @@ import '../enums.dart';
 class Impuestos extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get tipo => text()(); // p.ej. "Renta", "IGV" — ajustable
+  IntColumn get tipo => intEnum<ImpuestoTipo>()();
   TextColumn get periodo => text()(); // p.ej. "2026-08"
   RealColumn get monto => real()();
 

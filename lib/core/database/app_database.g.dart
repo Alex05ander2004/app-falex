@@ -3950,15 +3950,15 @@ class $ImpuestosTable extends Impuestos
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
   @override
-  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
-    'tipo',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<ImpuestoTipo, int> tipo =
+      GeneratedColumn<int>(
+        'tipo',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<ImpuestoTipo>($ImpuestosTable.$convertertipo);
   static const VerificationMeta _periodoMeta = const VerificationMeta(
     'periodo',
   );
@@ -4075,14 +4075,6 @@ class $ImpuestosTable extends Impuestos
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('tipo')) {
-      context.handle(
-        _tipoMeta,
-        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_tipoMeta);
-    }
     if (data.containsKey('periodo')) {
       context.handle(
         _periodoMeta,
@@ -4150,10 +4142,12 @@ class $ImpuestosTable extends Impuestos
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      tipo: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}tipo'],
-      )!,
+      tipo: $ImpuestosTable.$convertertipo.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}tipo'],
+        )!,
+      ),
       periodo: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}periodo'],
@@ -4196,13 +4190,15 @@ class $ImpuestosTable extends Impuestos
     return $ImpuestosTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<ImpuestoTipo, int, int> $convertertipo =
+      const EnumIndexConverter<ImpuestoTipo>(ImpuestoTipo.values);
   static JsonTypeConverter2<ImpuestoEstado, int, int> $converterestado =
       const EnumIndexConverter<ImpuestoEstado>(ImpuestoEstado.values);
 }
 
 class Impuesto extends DataClass implements Insertable<Impuesto> {
   final int id;
-  final String tipo;
+  final ImpuestoTipo tipo;
   final String periodo;
   final double monto;
   final DateTime fechaVencimiento;
@@ -4227,7 +4223,9 @@ class Impuesto extends DataClass implements Insertable<Impuesto> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['tipo'] = Variable<String>(tipo);
+    {
+      map['tipo'] = Variable<int>($ImpuestosTable.$convertertipo.toSql(tipo));
+    }
     map['periodo'] = Variable<String>(periodo);
     map['monto'] = Variable<double>(monto);
     map['fecha_vencimiento'] = Variable<DateTime>(fechaVencimiento);
@@ -4273,7 +4271,9 @@ class Impuesto extends DataClass implements Insertable<Impuesto> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Impuesto(
       id: serializer.fromJson<int>(json['id']),
-      tipo: serializer.fromJson<String>(json['tipo']),
+      tipo: $ImpuestosTable.$convertertipo.fromJson(
+        serializer.fromJson<int>(json['tipo']),
+      ),
       periodo: serializer.fromJson<String>(json['periodo']),
       monto: serializer.fromJson<double>(json['monto']),
       fechaVencimiento: serializer.fromJson<DateTime>(json['fechaVencimiento']),
@@ -4291,7 +4291,9 @@ class Impuesto extends DataClass implements Insertable<Impuesto> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'tipo': serializer.toJson<String>(tipo),
+      'tipo': serializer.toJson<int>(
+        $ImpuestosTable.$convertertipo.toJson(tipo),
+      ),
       'periodo': serializer.toJson<String>(periodo),
       'monto': serializer.toJson<double>(monto),
       'fechaVencimiento': serializer.toJson<DateTime>(fechaVencimiento),
@@ -4307,7 +4309,7 @@ class Impuesto extends DataClass implements Insertable<Impuesto> {
 
   Impuesto copyWith({
     int? id,
-    String? tipo,
+    ImpuestoTipo? tipo,
     String? periodo,
     double? monto,
     DateTime? fechaVencimiento,
@@ -4397,7 +4399,7 @@ class Impuesto extends DataClass implements Insertable<Impuesto> {
 
 class ImpuestosCompanion extends UpdateCompanion<Impuesto> {
   final Value<int> id;
-  final Value<String> tipo;
+  final Value<ImpuestoTipo> tipo;
   final Value<String> periodo;
   final Value<double> monto;
   final Value<DateTime> fechaVencimiento;
@@ -4420,7 +4422,7 @@ class ImpuestosCompanion extends UpdateCompanion<Impuesto> {
   });
   ImpuestosCompanion.insert({
     this.id = const Value.absent(),
-    required String tipo,
+    required ImpuestoTipo tipo,
     required String periodo,
     required double monto,
     required DateTime fechaVencimiento,
@@ -4435,7 +4437,7 @@ class ImpuestosCompanion extends UpdateCompanion<Impuesto> {
        fechaVencimiento = Value(fechaVencimiento);
   static Insertable<Impuesto> custom({
     Expression<int>? id,
-    Expression<String>? tipo,
+    Expression<int>? tipo,
     Expression<String>? periodo,
     Expression<double>? monto,
     Expression<DateTime>? fechaVencimiento,
@@ -4461,7 +4463,7 @@ class ImpuestosCompanion extends UpdateCompanion<Impuesto> {
 
   ImpuestosCompanion copyWith({
     Value<int>? id,
-    Value<String>? tipo,
+    Value<ImpuestoTipo>? tipo,
     Value<String>? periodo,
     Value<double>? monto,
     Value<DateTime>? fechaVencimiento,
@@ -4492,7 +4494,9 @@ class ImpuestosCompanion extends UpdateCompanion<Impuesto> {
       map['id'] = Variable<int>(id.value);
     }
     if (tipo.present) {
-      map['tipo'] = Variable<String>(tipo.value);
+      map['tipo'] = Variable<int>(
+        $ImpuestosTable.$convertertipo.toSql(tipo.value),
+      );
     }
     if (periodo.present) {
       map['periodo'] = Variable<String>(periodo.value);
@@ -6405,7 +6409,7 @@ typedef $$EgresosTableProcessedTableManager =
 typedef $$ImpuestosTableCreateCompanionBuilder =
     ImpuestosCompanion Function({
       Value<int> id,
-      required String tipo,
+      required ImpuestoTipo tipo,
       required String periodo,
       required double monto,
       required DateTime fechaVencimiento,
@@ -6418,7 +6422,7 @@ typedef $$ImpuestosTableCreateCompanionBuilder =
 typedef $$ImpuestosTableUpdateCompanionBuilder =
     ImpuestosCompanion Function({
       Value<int> id,
-      Value<String> tipo,
+      Value<ImpuestoTipo> tipo,
       Value<String> periodo,
       Value<double> monto,
       Value<DateTime> fechaVencimiento,
@@ -6443,10 +6447,11 @@ class $$ImpuestosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get tipo => $composableBuilder(
-    column: $table.tipo,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<ImpuestoTipo, ImpuestoTipo, int> get tipo =>
+      $composableBuilder(
+        column: $table.tipo,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<String> get periodo => $composableBuilder(
     column: $table.periodo,
@@ -6504,7 +6509,7 @@ class $$ImpuestosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get tipo => $composableBuilder(
+  ColumnOrderings<int> get tipo => $composableBuilder(
     column: $table.tipo,
     builder: (column) => ColumnOrderings(column),
   );
@@ -6562,7 +6567,7 @@ class $$ImpuestosTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get tipo =>
+  GeneratedColumnWithTypeConverter<ImpuestoTipo, int> get tipo =>
       $composableBuilder(column: $table.tipo, builder: (column) => column);
 
   GeneratedColumn<String> get periodo =>
@@ -6623,7 +6628,7 @@ class $$ImpuestosTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> tipo = const Value.absent(),
+                Value<ImpuestoTipo> tipo = const Value.absent(),
                 Value<String> periodo = const Value.absent(),
                 Value<double> monto = const Value.absent(),
                 Value<DateTime> fechaVencimiento = const Value.absent(),
@@ -6647,7 +6652,7 @@ class $$ImpuestosTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String tipo,
+                required ImpuestoTipo tipo,
                 required String periodo,
                 required double monto,
                 required DateTime fechaVencimiento,

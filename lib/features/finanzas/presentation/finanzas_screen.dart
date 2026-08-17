@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../egresos/presentation/egresos_list_screen.dart';
+import '../../impuestos/presentation/impuestos_list_screen.dart';
 import '../../ingresos/presentation/ingresos_list_screen.dart';
 import '../application/balance_general_provider.dart';
 
@@ -18,7 +19,7 @@ class FinanzasScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Finanzas'),
@@ -26,6 +27,7 @@ class FinanzasScreen extends ConsumerWidget {
             tabs: [
               Tab(text: 'Ingresos'),
               Tab(text: 'Egresos'),
+              Tab(text: 'Impuestos'),
             ],
           ),
         ),
@@ -74,6 +76,7 @@ class FinanzasScreen extends ConsumerWidget {
                 children: [
                   IngresosListScreen(),
                   EgresosListScreen(),
+                  ImpuestosListScreen(),
                 ],
               ),
             ),

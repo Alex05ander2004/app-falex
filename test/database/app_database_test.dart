@@ -1,10 +1,11 @@
-import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:falex/core/database/app_database.dart';
 import 'package:falex/core/database/enums.dart';
 import 'package:falex/core/errors/app_exceptions.dart';
 import 'package:falex/features/egresos/data/egresos_repository.dart';
+import 'package:falex/features/impuestos/data/impuestos_repository.dart';
 import 'package:falex/features/ingresos/data/ingresos_repository.dart';
 import 'package:falex/features/trabajadores/data/trabajadores_repository.dart';
 import 'package:falex/features/vehiculos/data/vehiculos_repository.dart';
@@ -318,6 +319,31 @@ void main() {
 
     expect(conFactura.igvCredito, 90);
     expect(sinFactura.igvCredito, 0);
+  });
+
+  test('crea un impuesto pendiente y lo marca como pagado', () async {
+    final repo = ImpuestosRepository(db);
+    final id = await repo.crear(
+      ImpuestosCompanion.insert(
+        tipo: ImpuestoTipo.igv,
+        periodo: '2026-08',
+        monto: 360,
+        fechaVencimiento: DateTime.now().add(const Duration(days: 10)),
+      ),
+    );
+
+    var impuesto =
+        await (db.select(db.impuestos)..where((i) => i.id.equals(id))).getSingle();
+    expect(impuesto.estado, ImpuestoEstado.pendiente);
+    expect(impuesto.fechaPago, isNull);
+
+    final fechaPago = DateTime.now();
+    await repo.marcarComoPagado(id, fechaPago: fechaPago);
+
+    impuesto =
+        await (db.select(db.impuestos)..where((i) => i.id.equals(id))).getSingle();
+    expect(impuesto.estado, ImpuestoEstado.pagado);
+    expect(impuesto.fechaPago, isNotNull);
   });
 
   test('rechaza un egreso con monto <= 0', () async {

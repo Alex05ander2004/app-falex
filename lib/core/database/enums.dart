@@ -58,3 +58,15 @@ enum EgresoCategoria { combustible, peajes, viaticos, mantenimiento, multas, otr
 
 /// Estado de pago de un [Impuesto].
 enum ImpuestoEstado { pendiente, pagado }
+
+/// Tributos y aportes que paga Falex — lista real dada por el dueño,
+/// más `otro` como válvula de escape para lo que no calce.
+enum ImpuestoTipo {
+  igv,
+  renta5taCategoria,
+  essalud,
+  scrt,
+  seguroVida,
+  afp,
+  otro,
+}

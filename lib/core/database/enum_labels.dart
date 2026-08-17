@@ -55,3 +55,18 @@ String etiquetaEgresoCategoria(EgresoCategoria categoria) => switch (categoria) 
       EgresoCategoria.multas => 'Multas',
       EgresoCategoria.otros => 'Otros',
     };
+
+String etiquetaImpuestoTipo(ImpuestoTipo tipo) => switch (tipo) {
+      ImpuestoTipo.igv => 'IGV',
+      ImpuestoTipo.renta5taCategoria => 'Renta 5ta categoría',
+      ImpuestoTipo.essalud => 'ESSALUD',
+      ImpuestoTipo.scrt => 'Seguro SCRT',
+      ImpuestoTipo.seguroVida => 'Seguro Vida',
+      ImpuestoTipo.afp => 'AFP',
+      ImpuestoTipo.otro => 'Otro',
+    };
+
+String etiquetaImpuestoEstado(ImpuestoEstado estado) => switch (estado) {
+      ImpuestoEstado.pendiente => 'Pendiente',
+      ImpuestoEstado.pagado => 'Pagado',
+    };

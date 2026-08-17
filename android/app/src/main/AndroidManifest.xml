@@ -2,6 +2,9 @@
     <!-- Para adjuntar foto de boleta/factura con la cámara (image_picker) -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- Recordatorio de vencimiento de impuestos (flutter_local_notifications) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="falex"
         android:name="${applicationName}"
