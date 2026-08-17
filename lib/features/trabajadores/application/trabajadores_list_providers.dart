@@ -24,6 +24,13 @@ final trabajadoresActivosProvider =
   return ref.watch(trabajadoresRepositoryProvider).watchAll(soloActivos: true);
 });
 
+/// Todos los trabajadores, activos e inactivos — para filtros históricos
+/// como el de Finanzas (Fase 6), donde un trabajador ya dado de baja
+/// puede seguir teniendo movimientos en su historial.
+final trabajadoresTodosProvider = StreamProvider.autoDispose<List<Trabajador>>((ref) {
+  return ref.watch(trabajadoresRepositoryProvider).watchAll();
+});
+
 /// Lista ya filtrada por el texto de búsqueda — lista para pintar.
 final trabajadoresListadoProvider =
     Provider.autoDispose<AsyncValue<List<Trabajador>>>((ref) {

@@ -22,6 +22,7 @@ class ViajesListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Viajes')),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_viajes',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ViajeFormScreen()),
         ),

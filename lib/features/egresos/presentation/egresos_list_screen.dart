@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/enum_labels.dart';
 import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
-import '../application/egresos_list_providers.dart';
+import '../../finanzas/application/finanzas_filtros_providers.dart';
 import '../data/egresos_repository.dart';
 import 'egreso_form_screen.dart';
 
@@ -13,11 +13,12 @@ class EgresosListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final egresos = ref.watch(egresosGeneralesProvider);
+    final egresos = ref.watch(egresosFiltradosProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_egresos',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const EgresoFormScreen()),
         ),

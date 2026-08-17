@@ -17,6 +17,7 @@ class VehiculosListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Flota')),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_vehiculos',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const VehiculoFormScreen()),
         ),

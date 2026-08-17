@@ -6,7 +6,7 @@ import '../../../core/database/enums.dart';
 import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/status_chip.dart';
-import '../application/impuestos_list_providers.dart';
+import '../../finanzas/application/finanzas_filtros_providers.dart';
 import '../data/impuestos_repository.dart';
 import 'impuesto_form_screen.dart';
 
@@ -15,11 +15,12 @@ class ImpuestosListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final impuestos = ref.watch(impuestosProvider);
+    final impuestos = ref.watch(impuestosFiltradosProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_impuestos',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ImpuestoFormScreen()),
         ),

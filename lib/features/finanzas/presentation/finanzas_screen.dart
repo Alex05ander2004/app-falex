@@ -5,10 +5,11 @@ import '../../egresos/presentation/egresos_list_screen.dart';
 import '../../impuestos/presentation/impuestos_list_screen.dart';
 import '../../ingresos/presentation/ingresos_list_screen.dart';
 import '../application/balance_general_provider.dart';
+import 'tendencia_screen.dart';
+import 'widgets/finanzas_filtro_bar.dart';
 
-/// Ingresos y egresos generales (no ligados a un viaje puntual) — Ruta
-/// Falex, Fase 4. El dashboard con filtros por mes/trabajador/viaje
-/// llega en la Fase 6; esto es la base sobre la que se construye.
+/// Ingresos, egresos e impuestos — filtrables por mes, trabajador o
+/// vehículo (Ruta Falex, Fase 6).
 class FinanzasScreen extends ConsumerWidget {
   const FinanzasScreen({super.key});
 
@@ -23,6 +24,15 @@ class FinanzasScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Finanzas'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              tooltip: 'Tendencia mensual',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TendenciaScreen()),
+              ),
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Ingresos'),
@@ -33,15 +43,17 @@ class FinanzasScreen extends ConsumerWidget {
         ),
         body: Column(
           children: [
+            const SizedBox(height: 8),
+            const FinanzasFiltroBar(),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
                       child: _TarjetaResumen(
-                        titulo: 'Balance general',
+                        titulo: 'Balance',
                         valor: balance,
                         colorNegativo: theme.colorScheme.error,
                         colorPositivo: theme.colorScheme.tertiary,
@@ -71,6 +83,7 @@ class FinanzasScreen extends ConsumerWidget {
                 style: theme.textTheme.bodySmall,
               ),
             ),
+            const SizedBox(height: 8),
             const Expanded(
               child: TabBarView(
                 children: [

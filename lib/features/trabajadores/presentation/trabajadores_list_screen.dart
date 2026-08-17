@@ -17,6 +17,7 @@ class TrabajadoresListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Trabajadores')),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_trabajadores',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const TrabajadorFormScreen()),
         ),

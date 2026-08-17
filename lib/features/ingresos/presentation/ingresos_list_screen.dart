@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/enum_labels.dart';
 import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../core/widgets/empty_state.dart';
-import '../application/ingresos_list_providers.dart';
+import '../../finanzas/application/finanzas_filtros_providers.dart';
 import '../data/ingresos_repository.dart';
 import 'ingreso_form_screen.dart';
 
@@ -13,11 +13,12 @@ class IngresosListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ingresos = ref.watch(ingresosGeneralesProvider);
+    final ingresos = ref.watch(ingresosFiltradosProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_ingresos',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const IngresoFormScreen()),
         ),
